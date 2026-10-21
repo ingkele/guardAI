@@ -1,0 +1,66 @@
+{
+  "generatedAt": "2026-10-21T22:28:05.9002766+08:00",
+  "pairs": [
+    {
+      "key": "5ce026ca78a616a5",
+      "a": "DuplicateBaseline.FilePath@src/GuardAI.Checks/Assets/DuplicateBaseline.cs",
+      "b": "CapabilityIndexStore.DefaultPath@src/GuardAI.Checks/Assets/CapabilityIndex.cs"
+    },
+    {
+      "key": "8cfa575358930648",
+      "a": "ReportWriterTests.all模式有文件时正常报告通过@tests/GuardAI.Tests/ReportWriterTests.cs",
+      "b": "ReportWriterTests.all模式空扫描不报通过并给出警告@tests/GuardAI.Tests/ReportWriterTests.cs"
+    },
+    {
+      "key": "7a4982b70d5b1cc7",
+      "a": "ReportWriterTests.changed模式零文件是正常通过@tests/GuardAI.Tests/ReportWriterTests.cs",
+      "b": "ReportWriterTests.all模式空扫描不报通过并给出警告@tests/GuardAI.Tests/ReportWriterTests.cs"
+    },
+    {
+      "key": "fb0b6c3edccb6834",
+      "a": "ReportWriterTests.changed模式零文件是正常通过@tests/GuardAI.Tests/ReportWriterTests.cs",
+      "b": "ReportWriterTests.all模式有文件时正常报告通过@tests/GuardAI.Tests/ReportWriterTests.cs"
+    },
+    {
+      "key": "2277a7586354100d",
+      "a": "CodeSimilarity.Containment@src/GuardAI.Checks/Assets/CodeSimilarity.cs",
+      "b": "CodeSimilarity.Jaccard@src/GuardAI.Checks/Assets/CodeSimilarity.cs"
+    },
+    {
+      "key": "73bd795f92efb18f",
+      "a": "DuplicateBaseline.PairKey@src/GuardAI.Checks/Assets/DuplicateBaseline.cs",
+      "b": "CSharpMemberParser.HashBody@src/GuardAI.Checks/Assets/CSharpMemberParser.cs"
+    },
+    {
+      "key": "106b73ab8de7c37d",
+      "a": "DuplicateBaseline.Load@src/GuardAI.Checks/Assets/DuplicateBaseline.cs",
+      "b": "CapabilityIndexStore.Load@src/GuardAI.Checks/Assets/CapabilityIndex.cs"
+    },
+    {
+      "key": "40fd5a23e3f93fe5",
+      "a": "DuplicateBaseline.Save@src/GuardAI.Checks/Assets/DuplicateBaseline.cs",
+      "b": "CapabilityIndexStore.Save@src/GuardAI.Checks/Assets/CapabilityIndex.cs"
+    },
+    {
+      "key": "c0b4a0c3f58db2b7",
+      "a": "ProjectScanner.Scan@src/GuardAI.Init/ProjectScanner.cs",
+      "b": "Ledger.RecordsPath@src/GuardAI.Core/Ledging/Ledger.cs"
+    },
+    {
+      "key": "614d3cb5317d73c9",
+      "a": "McpServerTests.SearchCapability无命中时提示放心新建@tests/GuardAI.Tests/McpServerTests.cs",
+      "b": "McpServerTests.SearchCapability命中已有实现并自动生成清单@tests/GuardAI.Tests/McpServerTests.cs"
+    },
+    {
+      "key": "b7f25f592214d7cf",
+      "a": "McpServerTests.SearchCapability可限制返回条数@tests/GuardAI.Tests/McpServerTests.cs",
+      "b": "McpServerTests.SearchCapability无命中时提示放心新建@tests/GuardAI.Tests/McpServerTests.cs"
+    },
+    {
+      "key": "98df06dbd011096a",
+      "a": "ScannerFixture.AddDirectory@tests/GuardAI.Tests/ProjectScannerTests.cs",
+      "b": "ScannerFixture.AddFile@tests/GuardAI.Tests/ProjectScannerTests.cs"
+    }
+  ],
+  "detectorVersion": 2
+}

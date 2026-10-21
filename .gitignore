@@ -1,9 +1,11 @@
 # guardAI 台账（本地记录，不出本机）
 .guard/records/
 
-# 自举状态（可再生：guardAI index / check 自动生成，换机器重跑即可）
+# 能力清单（可再生检索缓存：guardAI index 自动生成）
 .guard/capability-index.json
-.guard/duplicates-baseline.json
+
+# 注意：.guard/duplicates-baseline.json 故意入库——基线只记重复对的身份指纹（类名/方法名/文件），
+# 不含代码内容；随库共享后 CI 才能"只报新增"（否则 CI 全新 runner 每次首跑收基线 = 重复检测假绿）。
 
 # 构建产物（发版产物 dist/ 体积大，走发布渠道不进库）
 bin/

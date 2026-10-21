@@ -1,5 +1,8 @@
-# guardAI 规范门禁（由 guardAI init 生成）
+# guardAI 规范门禁（自举版：CI 里从源码构建 guardAI 再用它检查自己）
 # 说明：CI 是与"谁写的代码"无关的底线闸口——人、任何 AI 工具产出的代码都一视同仁。
+# 为什么用源码构建而不是直接调 guardAI 命令：全新 runner 上没有预装 guardAI，
+# 裸调会 command not found（exit 127）。自举构建保证零外部依赖、永远可用。
+# 用户项目接入时请用 templates/ci/github-actions.yml（含安装步骤的模板版）。
 name: guardAI
 
 on:
@@ -12,5 +15,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: 安装 .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: 构建 guardAI（自举）
+        run: dotnet publish src/GuardAI.Cli/GuardAI.Cli.csproj -c Release -o "$RUNNER_TEMP/guardai-build"
+
       - name: 规范守卫
-        run: guardAI check --repo . --mode all --trigger ci
+        run: "$RUNNER_TEMP/guardai-build/GuardAI.Cli" check --repo . --mode all --trigger ci
