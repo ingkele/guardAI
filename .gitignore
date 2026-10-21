@@ -11,6 +11,7 @@
 bin/
 obj/
 dist/
+release-assets/
 
 # IDE / 编辑器缓存
 .vs/

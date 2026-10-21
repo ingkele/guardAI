@@ -1,5 +1,8 @@
 # guardAI 规范门禁（由 guardAI init 生成）
 # 说明：CI 是与"谁写的代码"无关的底线闸口——人、任何 AI 工具产出的代码都一视同仁。
+# 二进制来源：GitHub Release（自包含单文件，零运行时依赖，解压即用）。
+# 提示：请把 .guard/duplicates-baseline.json 一并提交入库（只记重复对身份指纹，不含代码），
+#       否则 CI 全新 runner 每次首跑收基线 = 重复检测假绿。
 name: guardAI
 
 on:
@@ -12,5 +15,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: 安装 guardAI
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/guardai.zip" https://github.com/ingkele/guardAI/releases/latest/download/guardAI-linux-x64.zip
+          unzip -q "$RUNNER_TEMP/guardai.zip" -d "$RUNNER_TEMP/guardai"
+          chmod +x "$RUNNER_TEMP/guardai/linux-x64/GuardAI.Cli"
+          sudo ln -sf "$RUNNER_TEMP/guardai/linux-x64/GuardAI.Cli" /usr/local/bin/guardAI
+
       - name: 规范守卫
         run: guardAI check --repo . --mode all --trigger ci
