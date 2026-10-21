@@ -1,0 +1,6 @@
+# guardAI 规范门禁步骤（由 guardAI init 生成）
+# 用法：把下面这个 step 合并进 Gitee Go 现有构建 stage 的 steps 列表。
+# 退出码非 0 流水线红灯（0=通过 / 1=违规 / 2=配置或环境错误）。
+- name: 规范守卫
+  goals:
+    - guardAI check --repo . --mode all --trigger ci

@@ -1,0 +1,95 @@
+# ============================================================
+# guardAI 项目骨架规则配置（由 guardAI init 生成，可人工修改）
+# 项目: guardAI | 生态: DotNet | 骨架: Generic
+# 本文件是"规则资产"——引擎只是执行宿主，升级宿主时配置原样沿用。
+# 语法：支持 key: value、嵌套、- 列表、# 注释。字符串含空格请加引号。
+# ============================================================
+
+version: 1
+
+# 项目形态：app（应用）/ library（类库）。落位规则按 scope 匹配此值才生效
+# init 自动判定，可人工修改（类库项目的扩展类放模块根是惯例，落位规则 scope: app 不适用）
+project_type: app
+
+# 参与检查的文件扩展名（小写，带点）
+# init 按仓库实测到的代码文件扩展名生成，改用其他扩展名后请同步更新
+include_extensions:
+  - .cs
+  - .csproj
+
+# 同义目录黑名单：路径中出现任一目录名即违规（不区分大小写）
+# 注意：规范目录名（如 Utils/Extensions）不在黑名单——它们是合法归宿
+banned_dirs:
+  - utils2
+  - util
+  - uitli
+  - uitls
+  - helper
+  - helpers
+  - common
+  - shared
+  - misc
+  - temp
+  - tmp
+  - lib
+  - libs
+
+# 目录白名单：文件相对路径必须命中至少一条（** 任意层，* 单层）
+# 前段是 init 实测的目录基线快照（每层既有目录一条 '目录/*'，精确放行存量骨架）；
+# 后段是通用兜底；新增目录先与团队确认后补进来
+allowed_dirs:
+  - path: config/*
+    purpose: 空目录（既有骨架，预留）（init 实测既有目录）
+  - path: config/presets/*
+    purpose: init 实测既有子目录
+  - path: src/*
+    purpose: 源码模块（init 实测既有目录）
+  - path: src/GuardAI.Checks/*
+    purpose: init 实测既有子目录
+  - path: src/GuardAI.Checks/Structure/*
+    purpose: init 实测既有子目录
+  - path: src/GuardAI.Checks/Assets/*
+    purpose: P3 资产级检查插槽（重复检测、能力清单，产品设计方案骨架预留，2026-10-21 确认纳入）
+  - path: src/GuardAI.Cli/*
+    purpose: init 实测既有子目录
+  - path: src/GuardAI.Core/*
+    purpose: init 实测既有子目录
+  - path: src/GuardAI.Core/Config/*
+    purpose: init 实测既有子目录
+  - path: src/GuardAI.Core/Engine/*
+    purpose: init 实测既有子目录
+  - path: src/GuardAI.Core/Ledging/*
+    purpose: init 实测既有子目录
+  - path: src/GuardAI.Core/Reporting/*
+    purpose: init 实测既有子目录
+  - path: src/GuardAI.Init/*
+    purpose: init 实测既有子目录
+  - path: tests/*
+    purpose: 源码模块（init 实测既有目录）
+  - path: tests/GuardAI.Tests/*
+    purpose: init 实测既有子目录
+  - path: templates/**
+    purpose: 模板资产
+  - path: scripts/**
+    purpose: 脚本
+  - path: docs/**
+    purpose: 文档
+
+# 落位规则：文件名命中 file_pattern 时，所在目录必须命中 dir_pattern
+# scope: 适用项目形态（app / library / all），只在 project_type 匹配时生效
+placement_rules:
+  - name: 工具类必须放 Utils 目录
+    file_pattern: "*Helper.cs"
+    dir_pattern: "**/Utils/**"
+    suggest: "移动到所在项目的 Utils/ 目录下，例如 src/MyApp.Infrastructure/Utils/"
+    scope: app
+  - name: 工具类必须放 Utils 目录
+    file_pattern: "*Utils.cs"
+    dir_pattern: "**/Utils/**"
+    suggest: "移动到所在项目的 Utils/ 目录下；优先复用已有 Utils/ 内的同类方法"
+    scope: app
+  - name: 扩展类必须放 Extensions 目录
+    file_pattern: "*Extensions.cs"
+    dir_pattern: "**/Extensions/**"
+    suggest: "移动到所在项目的 Extensions/ 目录下；先检索是否已有同名扩展方法"
+    scope: app

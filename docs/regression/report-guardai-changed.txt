@@ -1,0 +1,44 @@
+============================================================
+guardAI（单入口：一条命令跑完所有检查）
+目标仓库: F:\NetAI代码规范化\guard-tool\demo\DemoShop
+检查模式: changed（仅 git 新增/改动文件）
+规则配置: structure-allowlist.yml
+============================================================
+
+[structure] 扫描 3 个文件，发现 5 处违规
+
+  x extras/FeatureFlag.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x src/DemoShop.Infrastructure/utils2/UploadHelper.cs
+    规则: 同义目录黑名单
+    说明: 路径中包含禁用目录 'utils2'——这是 AI 惯用的野目录，会破坏项目骨架
+    建议: 不要自建 utils2/ 目录，把文件放入骨架既定目录（见规则配置的 allowed_dirs）
+
+  x src/DemoShop.Infrastructure/utils2/UploadHelper.cs
+    规则: 落位规则：工具类必须放 Utils 目录
+    说明: 文件名 'UploadHelper.cs' 命中 '*Helper.cs'，但不在 **/Utils/** 目录下
+    建议: 移动到所在项目的 Utils/ 目录下，例如 src/MyApp.Infrastructure/Utils/
+
+  x src/DemoShop.Web/common/StringExtensions.cs
+    规则: 同义目录黑名单
+    说明: 路径中包含禁用目录 'common'——这是 AI 惯用的野目录，会破坏项目骨架
+    建议: 不要自建 common/ 目录，把文件放入骨架既定目录（见规则配置的 allowed_dirs）
+
+  x src/DemoShop.Web/common/StringExtensions.cs
+    规则: 落位规则：扩展类必须放 Extensions 目录
+    说明: 文件名 'StringExtensions.cs' 命中 '*Extensions.cs'，但不在 **/Extensions/** 目录下
+    建议: 移动到所在项目的 Extensions/ 目录下；先检索是否已有同名扩展方法
+
+------------------------------------------------------------
+结果: 失败 - 共 5 处违规
+
+【给 AI 的修复指令】以下违规必须逐条修复后重新运行 guardAI check 复检：
+  1. [目录白名单] extras/FeatureFlag.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  2. [同义目录黑名单] src/DemoShop.Infrastructure/utils2/UploadHelper.cs -> 不要自建 utils2/ 目录，把文件放入骨架既定目录（见规则配置的 allowed_dirs）
+  3. [落位规则：工具类必须放 Utils 目录] src/DemoShop.Infrastructure/utils2/UploadHelper.cs -> 移动到所在项目的 Utils/ 目录下，例如 src/MyApp.Infrastructure/Utils/
+  4. [同义目录黑名单] src/DemoShop.Web/common/StringExtensions.cs -> 不要自建 common/ 目录，把文件放入骨架既定目录（见规则配置的 allowed_dirs）
+  5. [落位规则：扩展类必须放 Extensions 目录] src/DemoShop.Web/common/StringExtensions.cs -> 移动到所在项目的 Extensions/ 目录下；先检索是否已有同名扩展方法
+------------------------------------------------------------

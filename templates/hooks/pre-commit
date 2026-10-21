@@ -1,0 +1,6 @@
+#!/bin/sh
+# guardAI pre-commit 钩子（由 guardAI init 生成）
+# 作用：不合规的文件进不了版本库。退出码非 0 则中止提交。
+# 调用方式与 CI 完全一致——同一条命令，只是挂载点不同。
+guardAI check --repo . --mode changed --trigger hook
+exit $?

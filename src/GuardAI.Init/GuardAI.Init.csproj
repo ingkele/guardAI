@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\GuardAI.Core\GuardAI.Core.csproj" />
+  </ItemGroup>
+
+  <!-- 闸口模板随产物分发（单一事实来源：仓库根 templates/ 目录） -->
+  <ItemGroup>
+    <None Include="..\..\templates\**\*" LinkBase="templates" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- M2-3：模板同时嵌入程序集（单文件 exe 免带 templates/ 目录）；新增模板需同步登记 TemplateProvider.KnownTemplates -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\templates\ci\github-actions.yml" LogicalName="guardai.templates.ci/github-actions.yml" />
+    <EmbeddedResource Include="..\..\templates\ci\gitee-go-step.yml" LogicalName="guardai.templates.ci/gitee-go-step.yml" />
+    <EmbeddedResource Include="..\..\templates\hooks\pre-commit" LogicalName="guardai.templates.hooks/pre-commit" />
+    <EmbeddedResource Include="..\..\templates\hooks\claude-code.json" LogicalName="guardai.templates.hooks/claude-code.json" />
+    <EmbeddedResource Include="..\..\templates\hooks\codex.toml" LogicalName="guardai.templates.hooks/codex.toml" />
+    <EmbeddedResource Include="..\..\templates\agents\AGENTS-snippet.md" LogicalName="guardai.templates.agents/AGENTS-snippet.md" />
+    <EmbeddedResource Include="..\..\templates\agents\workbuddy-skill.md" LogicalName="guardai.templates.agents/workbuddy-skill.md" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

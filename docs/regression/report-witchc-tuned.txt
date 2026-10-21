@@ -1,0 +1,56 @@
+============================================================
+guardAI（单入口：一条命令跑完所有检查）
+目标仓库: E:\WitchC
+检查模式: all（全部文件）
+规则配置: guardai.yml
+============================================================
+
+[structure] 扫描 235 个文件，发现 7 处违规
+
+  x .verify/Verify/Program.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x .verify/Verify/Verify.csproj
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DatabaseAccessor.SqlSugar/YearDatabase/YearDatabaseExtensions.cs
+    规则: 落位规则：扩展类必须放 Extensions 目录
+    说明: 文件名 'YearDatabaseExtensions.cs' 命中 '*Extensions.cs'，但不在 **/Extensions/** 目录下
+    建议: 移动到所在项目的 Extensions/ 目录下；先检索是否已有同名扩展方法
+
+  x framework/WitchC.Schedule/Dashboard/ScheduleDashboardExtensions.cs
+    规则: 落位规则：扩展类必须放 Extensions 目录
+    说明: 文件名 'ScheduleDashboardExtensions.cs' 命中 '*Extensions.cs'，但不在 **/Extensions/** 目录下
+    建议: 移动到所在项目的 Extensions/ 目录下；先检索是否已有同名扩展方法
+
+  x framework/WitchC.UnifyResult/UnifyResultExtensions.cs
+    规则: 落位规则：扩展类必须放 Extensions 目录
+    说明: 文件名 'UnifyResultExtensions.cs' 命中 '*Extensions.cs'，但不在 **/Extensions/** 目录下
+    建议: 移动到所在项目的 Extensions/ 目录下；先检索是否已有同名扩展方法
+
+  x framework/WitchC/WitchCExtensions.cs
+    规则: 落位规则：扩展类必须放 Extensions 目录
+    说明: 文件名 'WitchCExtensions.cs' 命中 '*Extensions.cs'，但不在 **/Extensions/** 目录下
+    建议: 移动到所在项目的 Extensions/ 目录下；先检索是否已有同名扩展方法
+
+  x samples/witchc-web-api/WitchC.ServiceDefaults/Extensions.cs
+    规则: 落位规则：扩展类必须放 Extensions 目录
+    说明: 文件名 'Extensions.cs' 命中 '*Extensions.cs'，但不在 **/Extensions/** 目录下
+    建议: 移动到所在项目的 Extensions/ 目录下；先检索是否已有同名扩展方法
+
+------------------------------------------------------------
+结果: 失败 - 共 7 处违规
+
+【给 AI 的修复指令】以下违规必须逐条修复后重新运行 guardAI check 复检：
+  1. [目录白名单] .verify/Verify/Program.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  2. [目录白名单] .verify/Verify/Verify.csproj -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  3. [落位规则：扩展类必须放 Extensions 目录] framework/WitchC.DatabaseAccessor.SqlSugar/YearDatabase/YearDatabaseExtensions.cs -> 移动到所在项目的 Extensions/ 目录下；先检索是否已有同名扩展方法
+  4. [落位规则：扩展类必须放 Extensions 目录] framework/WitchC.Schedule/Dashboard/ScheduleDashboardExtensions.cs -> 移动到所在项目的 Extensions/ 目录下；先检索是否已有同名扩展方法
+  5. [落位规则：扩展类必须放 Extensions 目录] framework/WitchC.UnifyResult/UnifyResultExtensions.cs -> 移动到所在项目的 Extensions/ 目录下；先检索是否已有同名扩展方法
+  6. [落位规则：扩展类必须放 Extensions 目录] framework/WitchC/WitchCExtensions.cs -> 移动到所在项目的 Extensions/ 目录下；先检索是否已有同名扩展方法
+  7. [落位规则：扩展类必须放 Extensions 目录] samples/witchc-web-api/WitchC.ServiceDefaults/Extensions.cs -> 移动到所在项目的 Extensions/ 目录下；先检索是否已有同名扩展方法
+------------------------------------------------------------

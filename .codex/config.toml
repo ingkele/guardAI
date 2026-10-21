@@ -1,0 +1,7 @@
+# guardAI AI 工具 hook（由 guardAI init 生成）
+# on_failure = "block" 表示不修完不许继续——坏先例当轮掐死。
+[[hooks]]
+event = "PostToolUse"
+command = "guardAI check --repo . --mode changed --trigger hook"
+timeout_ms = 30000
+on_failure = "block"

@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\GuardAI.Core\GuardAI.Core.csproj" />
+    <ProjectReference Include="..\GuardAI.Checks\GuardAI.Checks.csproj" />
+    <ProjectReference Include="..\GuardAI.Init\GuardAI.Init.csproj" />
+  </ItemGroup>
+
+  <!-- 闸口模板随 CLI 产物分发 -->
+  <ItemGroup>
+    <None Include="..\..\templates\**\*" LinkBase="templates" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

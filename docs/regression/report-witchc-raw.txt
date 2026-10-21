@@ -1,0 +1,1334 @@
+============================================================
+guardAI（单入口：一条命令跑完所有检查）
+目标仓库: E:\WitchC
+检查模式: all（全部文件）
+规则配置: guardai.yml
+============================================================
+
+[structure] 扫描 235 个文件，发现 220 处违规
+
+  x .verify/Verify/Program.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x .verify/Verify/Verify.csproj
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Cache/CacheService.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Cache/Extensions/CacheExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Cache/ICacheService.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Cache/WitchC.Cache.csproj
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Cors/CorsOptions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Cors/Extensions/CorsExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Cors/WitchC.Cors.csproj
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DataAnnotations/Attributes/DataValidationAttribute.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DataAnnotations/Attributes/NonValidationAttribute.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DataAnnotations/Attributes/ValidationTypes.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DataAnnotations/DataValidation.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DataAnnotations/Extensions/DataValidationExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DataAnnotations/Filters/DataValidationFilter.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DataAnnotations/GlobalUsings.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DataAnnotations/Results/ValidationResult.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DataAnnotations/WitchC.DataAnnotations.csproj
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DatabaseAccessor.SqlSugar/Auditing/AuditedEntity.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DatabaseAccessor.SqlSugar/Auditing/AuditingInterceptor.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DatabaseAccessor.SqlSugar/Auditing/IAuditing.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DatabaseAccessor.SqlSugar/Entitys/ISqlSugarEntitySeedData.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DatabaseAccessor.SqlSugar/Entitys/SqlSugarPagedList.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DatabaseAccessor.SqlSugar/Extensions/CodeFirstExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DatabaseAccessor.SqlSugar/Extensions/PagedQueryableExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DatabaseAccessor.SqlSugar/Extensions/SqlSugarExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DatabaseAccessor.SqlSugar/Filters/SoftDeleteFilter.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DatabaseAccessor.SqlSugar/GlobalUsings.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DatabaseAccessor.SqlSugar/Internal/SqlProfiler.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DatabaseAccessor.SqlSugar/Repositories/ISqlSugarRepository.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DatabaseAccessor.SqlSugar/Repositories/SqlSugarRepository.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DatabaseAccessor.SqlSugar/UnitOfWork/IUnitOfWork.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DatabaseAccessor.SqlSugar/UnitOfWork/UnitOfWork.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DatabaseAccessor.SqlSugar/WitchC.DatabaseAccessor.SqlSugar.csproj
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DatabaseAccessor.SqlSugar/YearDatabase/SnowflakeIdYearParser.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DatabaseAccessor.SqlSugar/YearDatabase/YearDatabaseAttribute.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DatabaseAccessor.SqlSugar/YearDatabase/YearDatabaseDiscoverer.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DatabaseAccessor.SqlSugar/YearDatabase/YearDatabaseExtensions.cs
+    规则: 落位规则：扩展类必须放 Extensions 目录
+    说明: 文件名 'YearDatabaseExtensions.cs' 命中 '*Extensions.cs'，但不在 **/Extensions/** 目录下
+    建议: 移动到所在项目的 Extensions/ 目录下；先检索是否已有同名扩展方法
+
+  x framework/WitchC.DatabaseAccessor.SqlSugar/YearDatabase/YearDatabaseExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DatabaseAccessor.SqlSugar/YearDatabase/YearDatabaseInitializer.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DatabaseAccessor.SqlSugar/YearDatabase/YearDatabaseOptions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DatabaseAccessor.SqlSugar/YearDatabase/YearDatabaseRouter.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Desensitization/Desensitize.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Desensitization/WitchC.Desensitization.csproj
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DynamicApi/Attributes/ApiSettingsAttribute.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DynamicApi/Attributes/HttpMethodOverrideAttribute.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DynamicApi/Attributes/NonDynamicApiAttribute.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DynamicApi/Conventions/DynamicApiConvention.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DynamicApi/Extensions/DynamicApiExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DynamicApi/GlobalUsings.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DynamicApi/IDynamicApiController.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DynamicApi/Providers/DynamicApiFeatureProvider.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DynamicApi/Selectors/DynamicApiSelector.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.DynamicApi/WitchC.DynamicApi.csproj
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Email/EmailMessage.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Email/EmailOptions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Email/EmailService.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Email/Extensions/EmailExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Email/WitchC.Email.csproj
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Encryption/Encrypt.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Encryption/WitchC.Encryption.csproj
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.EventBus/EventBus.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.EventBus/EventBusOptions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.EventBus/EventSource.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.EventBus/EventSubscribeAttribute.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.EventBus/Extensions/EventBusExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.EventBus/GlobalUsings.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.EventBus/IEvent.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.EventBus/IEventBus.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.EventBus/IEventFallbackPolicy.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.EventBus/IEventHandler.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.EventBus/IEventPublisher.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.EventBus/IEventSubscriber.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.EventBus/MessageCenter.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.EventBus/WitchC.EventBus.csproj
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.ExceptionHandler/Attributes/ErrorCodeItemMetadataAttribute.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.ExceptionHandler/Attributes/IfExceptionAttribute.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.ExceptionHandler/ErrorCodes/ErrorCodes.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.ExceptionHandler/Exceptions/BusinessException.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.ExceptionHandler/Exceptions/FriendlyException.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.ExceptionHandler/Extensions/GlobalExceptionMiddlewareExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.ExceptionHandler/GlobalUsings.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.ExceptionHandler/Internal/GlobalExceptionMiddleware.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.ExceptionHandler/Oops.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.ExceptionHandler/Result/ExceptionResult.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.ExceptionHandler/WitchC.ExceptionHandler.csproj
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.FileStorage/Extensions/FileStorageExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.FileStorage/IFileStorage.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.FileStorage/Local/LocalFileStorage.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.FileStorage/Models/FileModels.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.FileStorage/WitchC.FileStorage.csproj
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Http/Extensions/HttpExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Http/HttpOptions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Http/HttpRequest.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Http/HttpService.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Http/WitchC.Http.csproj
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.IdGeneration/IdGenerator.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.IdGeneration/WitchC.IdGeneration.csproj
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Jwt/Extensions/JwtExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Jwt/JwtOptions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Jwt/JwtTokenService.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Jwt/WitchC.Jwt.csproj
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Localization/Extensions/LocalizationExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Localization/ILocalizationService.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Localization/LocalizationOptions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Localization/LocalizationService.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Localization/WitchC.Localization.csproj
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Logging.Serilog/Extensions/SerilogOperationLogExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Logging.Serilog/SerilogOperationLogService.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Logging.Serilog/WitchC.Logging.Serilog.csproj
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Logging/Extensions/OperationLogExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Logging/OperationLog.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Logging/OperationLogAttribute.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Logging/OperationLogFilter.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Logging/OperationLogService.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Logging/WitchC.Logging.csproj
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Mapper/Extensions/MapperExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Mapper/GlobalUsings.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Mapper/Interfaces/IRegister.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Mapper/WitchC.Mapper.csproj
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Schedule/Attributes/CronAttribute.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Schedule/Attributes/MacroAttributes.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Schedule/Attributes/PeriodAttribute.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Schedule/Attributes/ScheduledTaskAttribute.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Schedule/Cron/CronExpression.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Schedule/Dashboard/ScheduleDashboardExtensions.cs
+    规则: 落位规则：扩展类必须放 Extensions 目录
+    说明: 文件名 'ScheduleDashboardExtensions.cs' 命中 '*Extensions.cs'，但不在 **/Extensions/** 目录下
+    建议: 移动到所在项目的 Extensions/ 目录下；先检索是否已有同名扩展方法
+
+  x framework/WitchC.Schedule/Dashboard/ScheduleDashboardExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Schedule/Dashboard/ScheduleDashboardMiddleware.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Schedule/Extensions/ScheduleServiceExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Schedule/IScheduler.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Schedule/ISchedulerFactory.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Schedule/Jobs/IJob.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Schedule/Jobs/JobDetail.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Schedule/Jobs/JobExecutionContext.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Schedule/ScheduleHostedService.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Schedule/ScheduleOptions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Schedule/Scheduler.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Schedule/Triggers/CronTrigger.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Schedule/Triggers/ITrigger.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Schedule/Triggers/MacroTrigger.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Schedule/Triggers/PeriodTrigger.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Schedule/Triggers/TriggerBuilder.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.Schedule/WitchC.Schedule.csproj
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.SignalR/Extensions/SignalRExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.SignalR/Hubs/MessageHub.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.SignalR/SignalRMessageService.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.SignalR/SignalROptions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.SignalR/WitchC.SignalR.csproj
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.UnifyResult/DefaultUnifyResultProvider.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.UnifyResult/IUnifyResult.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.UnifyResult/UnifyResult.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.UnifyResult/UnifyResultActionFilter.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.UnifyResult/UnifyResultExtensions.cs
+    规则: 落位规则：扩展类必须放 Extensions 目录
+    说明: 文件名 'UnifyResultExtensions.cs' 命中 '*Extensions.cs'，但不在 **/Extensions/** 目录下
+    建议: 移动到所在项目的 Extensions/ 目录下；先检索是否已有同名扩展方法
+
+  x framework/WitchC.UnifyResult/UnifyResultExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.UnifyResult/UnifyResultProvider.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.UnifyResult/WitchC.UnifyResult.csproj
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.WorkerService/Extensions/WorkerServiceExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.WorkerService/WitchC.WorkerService.csproj
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.WorkerService/WorkerOptions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC.WorkerService/Workers/BackgroundWorker.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC/App/App.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC/App/InternalApp.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC/App/Options/AppSettingsOptions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC/DependencyInjection/Attributes/InjectionAttribute.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC/DependencyInjection/Attributes/SkipScanAttribute.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC/DependencyInjection/Dependencies/IPrivateDependency.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC/DependencyInjection/Dependencies/IScoped.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC/DependencyInjection/Dependencies/ISingleton.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC/DependencyInjection/Dependencies/ITransient.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC/DependencyInjection/Enums/InjectionActions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC/DependencyInjection/Enums/InjectionPatterns.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC/DependencyInjection/Enums/RegisterType.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC/DependencyInjection/Extensions/DependencyInjectionExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC/DependencyInjection/Options/DependencyInjectionSettingsOptions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC/DependencyInjection/Providers/INamedServiceProvider.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC/DependencyInjection/Providers/NamedServiceProvider.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC/DependencyInjection/Scoped.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC/Extensions/CollectionExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC/Extensions/DateTimeExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC/Extensions/DictionaryExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC/Extensions/EnumExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC/Extensions/GuidExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC/Extensions/HttpContextExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC/Extensions/JsonExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC/Extensions/LinqExpressionExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC/Extensions/ObjectExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC/Extensions/StreamExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC/Extensions/StringExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC/Extensions/TaskExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC/Extensions/TypeExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC/GlobalUsings.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC/WitchC.csproj
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x framework/WitchC/WitchCExtensions.cs
+    规则: 落位规则：扩展类必须放 Extensions 目录
+    说明: 文件名 'WitchCExtensions.cs' 命中 '*Extensions.cs'，但不在 **/Extensions/** 目录下
+    建议: 移动到所在项目的 Extensions/ 目录下；先检索是否已有同名扩展方法
+
+  x framework/WitchC/WitchCExtensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x samples/witchc-web-api/WitchC.AppHost/AppHost.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x samples/witchc-web-api/WitchC.AppHost/WitchC.AppHost.csproj
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x samples/witchc-web-api/WitchC.RBAC.Application/Services/IRoleService.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x samples/witchc-web-api/WitchC.RBAC.Application/Services/RoleService.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x samples/witchc-web-api/WitchC.RBAC.Application/WitchC.RBAC.Application.csproj
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x samples/witchc-web-api/WitchC.RBAC.Domain/Entities/Permission.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x samples/witchc-web-api/WitchC.RBAC.Domain/Entities/Role.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x samples/witchc-web-api/WitchC.RBAC.Domain/Entities/User.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x samples/witchc-web-api/WitchC.RBAC.Domain/Repositories/IRoleRepository.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x samples/witchc-web-api/WitchC.RBAC.Domain/Repositories/IUserRepository.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x samples/witchc-web-api/WitchC.RBAC.Domain/WitchC.RBAC.Domain.csproj
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x samples/witchc-web-api/WitchC.RBAC.Infrastructure/Repositories/SqlSugarRepositories.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x samples/witchc-web-api/WitchC.RBAC.Infrastructure/WitchC.RBAC.Infrastructure.csproj
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x samples/witchc-web-api/WitchC.RBAC.UnitTests/UnitTest1.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x samples/witchc-web-api/WitchC.RBAC.UnitTests/WitchC.RBAC.UnitTests.csproj
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x samples/witchc-web-api/WitchC.ServiceDefaults/Extensions.cs
+    规则: 落位规则：扩展类必须放 Extensions 目录
+    说明: 文件名 'Extensions.cs' 命中 '*Extensions.cs'，但不在 **/Extensions/** 目录下
+    建议: 移动到所在项目的 Extensions/ 目录下；先检索是否已有同名扩展方法
+
+  x samples/witchc-web-api/WitchC.ServiceDefaults/Extensions.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x samples/witchc-web-api/WitchC.ServiceDefaults/WitchC.ServiceDefaults.csproj
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x samples/witchc-web-api/WitchC.Web.API/Controllers/DebugController.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x samples/witchc-web-api/WitchC.Web.API/Controllers/RolesController.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x samples/witchc-web-api/WitchC.Web.API/Controllers/TestController.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x samples/witchc-web-api/WitchC.Web.API/Controllers/TestDIController.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x samples/witchc-web-api/WitchC.Web.API/Program.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x samples/witchc-web-api/WitchC.Web.API/TestServices.cs
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x samples/witchc-web-api/WitchC.Web.API/WitchC.Web.API.csproj
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+  x samples/witchc-web-api/Witchc.Web.Entities/Witchc.Web.Entities.csproj
+    规则: 目录白名单
+    说明: 文件不在项目骨架白名单的任何目录内（疑似 AI 自由发挥新建了目录）
+    建议: 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+
+------------------------------------------------------------
+结果: 失败 - 共 220 处违规
+
+【给 AI 的修复指令】以下违规必须逐条修复后重新运行 guardAI check 复检：
+  1. [目录白名单] .verify/Verify/Program.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  2. [目录白名单] .verify/Verify/Verify.csproj -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  3. [目录白名单] framework/WitchC.Cache/CacheService.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  4. [目录白名单] framework/WitchC.Cache/Extensions/CacheExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  5. [目录白名单] framework/WitchC.Cache/ICacheService.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  6. [目录白名单] framework/WitchC.Cache/WitchC.Cache.csproj -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  7. [目录白名单] framework/WitchC.Cors/CorsOptions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  8. [目录白名单] framework/WitchC.Cors/Extensions/CorsExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  9. [目录白名单] framework/WitchC.Cors/WitchC.Cors.csproj -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  10. [目录白名单] framework/WitchC.DataAnnotations/Attributes/DataValidationAttribute.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  11. [目录白名单] framework/WitchC.DataAnnotations/Attributes/NonValidationAttribute.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  12. [目录白名单] framework/WitchC.DataAnnotations/Attributes/ValidationTypes.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  13. [目录白名单] framework/WitchC.DataAnnotations/DataValidation.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  14. [目录白名单] framework/WitchC.DataAnnotations/Extensions/DataValidationExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  15. [目录白名单] framework/WitchC.DataAnnotations/Filters/DataValidationFilter.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  16. [目录白名单] framework/WitchC.DataAnnotations/GlobalUsings.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  17. [目录白名单] framework/WitchC.DataAnnotations/Results/ValidationResult.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  18. [目录白名单] framework/WitchC.DataAnnotations/WitchC.DataAnnotations.csproj -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  19. [目录白名单] framework/WitchC.DatabaseAccessor.SqlSugar/Auditing/AuditedEntity.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  20. [目录白名单] framework/WitchC.DatabaseAccessor.SqlSugar/Auditing/AuditingInterceptor.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  21. [目录白名单] framework/WitchC.DatabaseAccessor.SqlSugar/Auditing/IAuditing.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  22. [目录白名单] framework/WitchC.DatabaseAccessor.SqlSugar/Entitys/ISqlSugarEntitySeedData.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  23. [目录白名单] framework/WitchC.DatabaseAccessor.SqlSugar/Entitys/SqlSugarPagedList.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  24. [目录白名单] framework/WitchC.DatabaseAccessor.SqlSugar/Extensions/CodeFirstExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  25. [目录白名单] framework/WitchC.DatabaseAccessor.SqlSugar/Extensions/PagedQueryableExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  26. [目录白名单] framework/WitchC.DatabaseAccessor.SqlSugar/Extensions/SqlSugarExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  27. [目录白名单] framework/WitchC.DatabaseAccessor.SqlSugar/Filters/SoftDeleteFilter.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  28. [目录白名单] framework/WitchC.DatabaseAccessor.SqlSugar/GlobalUsings.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  29. [目录白名单] framework/WitchC.DatabaseAccessor.SqlSugar/Internal/SqlProfiler.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  30. [目录白名单] framework/WitchC.DatabaseAccessor.SqlSugar/Repositories/ISqlSugarRepository.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  31. [目录白名单] framework/WitchC.DatabaseAccessor.SqlSugar/Repositories/SqlSugarRepository.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  32. [目录白名单] framework/WitchC.DatabaseAccessor.SqlSugar/UnitOfWork/IUnitOfWork.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  33. [目录白名单] framework/WitchC.DatabaseAccessor.SqlSugar/UnitOfWork/UnitOfWork.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  34. [目录白名单] framework/WitchC.DatabaseAccessor.SqlSugar/WitchC.DatabaseAccessor.SqlSugar.csproj -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  35. [目录白名单] framework/WitchC.DatabaseAccessor.SqlSugar/YearDatabase/SnowflakeIdYearParser.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  36. [目录白名单] framework/WitchC.DatabaseAccessor.SqlSugar/YearDatabase/YearDatabaseAttribute.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  37. [目录白名单] framework/WitchC.DatabaseAccessor.SqlSugar/YearDatabase/YearDatabaseDiscoverer.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  38. [落位规则：扩展类必须放 Extensions 目录] framework/WitchC.DatabaseAccessor.SqlSugar/YearDatabase/YearDatabaseExtensions.cs -> 移动到所在项目的 Extensions/ 目录下；先检索是否已有同名扩展方法
+  39. [目录白名单] framework/WitchC.DatabaseAccessor.SqlSugar/YearDatabase/YearDatabaseExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  40. [目录白名单] framework/WitchC.DatabaseAccessor.SqlSugar/YearDatabase/YearDatabaseInitializer.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  41. [目录白名单] framework/WitchC.DatabaseAccessor.SqlSugar/YearDatabase/YearDatabaseOptions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  42. [目录白名单] framework/WitchC.DatabaseAccessor.SqlSugar/YearDatabase/YearDatabaseRouter.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  43. [目录白名单] framework/WitchC.Desensitization/Desensitize.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  44. [目录白名单] framework/WitchC.Desensitization/WitchC.Desensitization.csproj -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  45. [目录白名单] framework/WitchC.DynamicApi/Attributes/ApiSettingsAttribute.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  46. [目录白名单] framework/WitchC.DynamicApi/Attributes/HttpMethodOverrideAttribute.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  47. [目录白名单] framework/WitchC.DynamicApi/Attributes/NonDynamicApiAttribute.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  48. [目录白名单] framework/WitchC.DynamicApi/Conventions/DynamicApiConvention.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  49. [目录白名单] framework/WitchC.DynamicApi/Extensions/DynamicApiExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  50. [目录白名单] framework/WitchC.DynamicApi/GlobalUsings.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  51. [目录白名单] framework/WitchC.DynamicApi/IDynamicApiController.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  52. [目录白名单] framework/WitchC.DynamicApi/Providers/DynamicApiFeatureProvider.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  53. [目录白名单] framework/WitchC.DynamicApi/Selectors/DynamicApiSelector.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  54. [目录白名单] framework/WitchC.DynamicApi/WitchC.DynamicApi.csproj -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  55. [目录白名单] framework/WitchC.Email/EmailMessage.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  56. [目录白名单] framework/WitchC.Email/EmailOptions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  57. [目录白名单] framework/WitchC.Email/EmailService.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  58. [目录白名单] framework/WitchC.Email/Extensions/EmailExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  59. [目录白名单] framework/WitchC.Email/WitchC.Email.csproj -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  60. [目录白名单] framework/WitchC.Encryption/Encrypt.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  61. [目录白名单] framework/WitchC.Encryption/WitchC.Encryption.csproj -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  62. [目录白名单] framework/WitchC.EventBus/EventBus.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  63. [目录白名单] framework/WitchC.EventBus/EventBusOptions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  64. [目录白名单] framework/WitchC.EventBus/EventSource.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  65. [目录白名单] framework/WitchC.EventBus/EventSubscribeAttribute.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  66. [目录白名单] framework/WitchC.EventBus/Extensions/EventBusExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  67. [目录白名单] framework/WitchC.EventBus/GlobalUsings.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  68. [目录白名单] framework/WitchC.EventBus/IEvent.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  69. [目录白名单] framework/WitchC.EventBus/IEventBus.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  70. [目录白名单] framework/WitchC.EventBus/IEventFallbackPolicy.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  71. [目录白名单] framework/WitchC.EventBus/IEventHandler.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  72. [目录白名单] framework/WitchC.EventBus/IEventPublisher.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  73. [目录白名单] framework/WitchC.EventBus/IEventSubscriber.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  74. [目录白名单] framework/WitchC.EventBus/MessageCenter.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  75. [目录白名单] framework/WitchC.EventBus/WitchC.EventBus.csproj -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  76. [目录白名单] framework/WitchC.ExceptionHandler/Attributes/ErrorCodeItemMetadataAttribute.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  77. [目录白名单] framework/WitchC.ExceptionHandler/Attributes/IfExceptionAttribute.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  78. [目录白名单] framework/WitchC.ExceptionHandler/ErrorCodes/ErrorCodes.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  79. [目录白名单] framework/WitchC.ExceptionHandler/Exceptions/BusinessException.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  80. [目录白名单] framework/WitchC.ExceptionHandler/Exceptions/FriendlyException.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  81. [目录白名单] framework/WitchC.ExceptionHandler/Extensions/GlobalExceptionMiddlewareExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  82. [目录白名单] framework/WitchC.ExceptionHandler/GlobalUsings.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  83. [目录白名单] framework/WitchC.ExceptionHandler/Internal/GlobalExceptionMiddleware.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  84. [目录白名单] framework/WitchC.ExceptionHandler/Oops.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  85. [目录白名单] framework/WitchC.ExceptionHandler/Result/ExceptionResult.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  86. [目录白名单] framework/WitchC.ExceptionHandler/WitchC.ExceptionHandler.csproj -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  87. [目录白名单] framework/WitchC.FileStorage/Extensions/FileStorageExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  88. [目录白名单] framework/WitchC.FileStorage/IFileStorage.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  89. [目录白名单] framework/WitchC.FileStorage/Local/LocalFileStorage.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  90. [目录白名单] framework/WitchC.FileStorage/Models/FileModels.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  91. [目录白名单] framework/WitchC.FileStorage/WitchC.FileStorage.csproj -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  92. [目录白名单] framework/WitchC.Http/Extensions/HttpExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  93. [目录白名单] framework/WitchC.Http/HttpOptions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  94. [目录白名单] framework/WitchC.Http/HttpRequest.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  95. [目录白名单] framework/WitchC.Http/HttpService.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  96. [目录白名单] framework/WitchC.Http/WitchC.Http.csproj -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  97. [目录白名单] framework/WitchC.IdGeneration/IdGenerator.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  98. [目录白名单] framework/WitchC.IdGeneration/WitchC.IdGeneration.csproj -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  99. [目录白名单] framework/WitchC.Jwt/Extensions/JwtExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  100. [目录白名单] framework/WitchC.Jwt/JwtOptions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  101. [目录白名单] framework/WitchC.Jwt/JwtTokenService.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  102. [目录白名单] framework/WitchC.Jwt/WitchC.Jwt.csproj -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  103. [目录白名单] framework/WitchC.Localization/Extensions/LocalizationExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  104. [目录白名单] framework/WitchC.Localization/ILocalizationService.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  105. [目录白名单] framework/WitchC.Localization/LocalizationOptions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  106. [目录白名单] framework/WitchC.Localization/LocalizationService.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  107. [目录白名单] framework/WitchC.Localization/WitchC.Localization.csproj -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  108. [目录白名单] framework/WitchC.Logging.Serilog/Extensions/SerilogOperationLogExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  109. [目录白名单] framework/WitchC.Logging.Serilog/SerilogOperationLogService.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  110. [目录白名单] framework/WitchC.Logging.Serilog/WitchC.Logging.Serilog.csproj -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  111. [目录白名单] framework/WitchC.Logging/Extensions/OperationLogExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  112. [目录白名单] framework/WitchC.Logging/OperationLog.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  113. [目录白名单] framework/WitchC.Logging/OperationLogAttribute.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  114. [目录白名单] framework/WitchC.Logging/OperationLogFilter.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  115. [目录白名单] framework/WitchC.Logging/OperationLogService.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  116. [目录白名单] framework/WitchC.Logging/WitchC.Logging.csproj -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  117. [目录白名单] framework/WitchC.Mapper/Extensions/MapperExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  118. [目录白名单] framework/WitchC.Mapper/GlobalUsings.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  119. [目录白名单] framework/WitchC.Mapper/Interfaces/IRegister.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  120. [目录白名单] framework/WitchC.Mapper/WitchC.Mapper.csproj -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  121. [目录白名单] framework/WitchC.Schedule/Attributes/CronAttribute.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  122. [目录白名单] framework/WitchC.Schedule/Attributes/MacroAttributes.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  123. [目录白名单] framework/WitchC.Schedule/Attributes/PeriodAttribute.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  124. [目录白名单] framework/WitchC.Schedule/Attributes/ScheduledTaskAttribute.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  125. [目录白名单] framework/WitchC.Schedule/Cron/CronExpression.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  126. [落位规则：扩展类必须放 Extensions 目录] framework/WitchC.Schedule/Dashboard/ScheduleDashboardExtensions.cs -> 移动到所在项目的 Extensions/ 目录下；先检索是否已有同名扩展方法
+  127. [目录白名单] framework/WitchC.Schedule/Dashboard/ScheduleDashboardExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  128. [目录白名单] framework/WitchC.Schedule/Dashboard/ScheduleDashboardMiddleware.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  129. [目录白名单] framework/WitchC.Schedule/Extensions/ScheduleServiceExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  130. [目录白名单] framework/WitchC.Schedule/IScheduler.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  131. [目录白名单] framework/WitchC.Schedule/ISchedulerFactory.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  132. [目录白名单] framework/WitchC.Schedule/Jobs/IJob.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  133. [目录白名单] framework/WitchC.Schedule/Jobs/JobDetail.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  134. [目录白名单] framework/WitchC.Schedule/Jobs/JobExecutionContext.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  135. [目录白名单] framework/WitchC.Schedule/ScheduleHostedService.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  136. [目录白名单] framework/WitchC.Schedule/ScheduleOptions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  137. [目录白名单] framework/WitchC.Schedule/Scheduler.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  138. [目录白名单] framework/WitchC.Schedule/Triggers/CronTrigger.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  139. [目录白名单] framework/WitchC.Schedule/Triggers/ITrigger.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  140. [目录白名单] framework/WitchC.Schedule/Triggers/MacroTrigger.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  141. [目录白名单] framework/WitchC.Schedule/Triggers/PeriodTrigger.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  142. [目录白名单] framework/WitchC.Schedule/Triggers/TriggerBuilder.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  143. [目录白名单] framework/WitchC.Schedule/WitchC.Schedule.csproj -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  144. [目录白名单] framework/WitchC.SignalR/Extensions/SignalRExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  145. [目录白名单] framework/WitchC.SignalR/Hubs/MessageHub.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  146. [目录白名单] framework/WitchC.SignalR/SignalRMessageService.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  147. [目录白名单] framework/WitchC.SignalR/SignalROptions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  148. [目录白名单] framework/WitchC.SignalR/WitchC.SignalR.csproj -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  149. [目录白名单] framework/WitchC.UnifyResult/DefaultUnifyResultProvider.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  150. [目录白名单] framework/WitchC.UnifyResult/IUnifyResult.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  151. [目录白名单] framework/WitchC.UnifyResult/UnifyResult.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  152. [目录白名单] framework/WitchC.UnifyResult/UnifyResultActionFilter.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  153. [落位规则：扩展类必须放 Extensions 目录] framework/WitchC.UnifyResult/UnifyResultExtensions.cs -> 移动到所在项目的 Extensions/ 目录下；先检索是否已有同名扩展方法
+  154. [目录白名单] framework/WitchC.UnifyResult/UnifyResultExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  155. [目录白名单] framework/WitchC.UnifyResult/UnifyResultProvider.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  156. [目录白名单] framework/WitchC.UnifyResult/WitchC.UnifyResult.csproj -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  157. [目录白名单] framework/WitchC.WorkerService/Extensions/WorkerServiceExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  158. [目录白名单] framework/WitchC.WorkerService/WitchC.WorkerService.csproj -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  159. [目录白名单] framework/WitchC.WorkerService/WorkerOptions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  160. [目录白名单] framework/WitchC.WorkerService/Workers/BackgroundWorker.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  161. [目录白名单] framework/WitchC/App/App.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  162. [目录白名单] framework/WitchC/App/InternalApp.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  163. [目录白名单] framework/WitchC/App/Options/AppSettingsOptions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  164. [目录白名单] framework/WitchC/DependencyInjection/Attributes/InjectionAttribute.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  165. [目录白名单] framework/WitchC/DependencyInjection/Attributes/SkipScanAttribute.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  166. [目录白名单] framework/WitchC/DependencyInjection/Dependencies/IPrivateDependency.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  167. [目录白名单] framework/WitchC/DependencyInjection/Dependencies/IScoped.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  168. [目录白名单] framework/WitchC/DependencyInjection/Dependencies/ISingleton.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  169. [目录白名单] framework/WitchC/DependencyInjection/Dependencies/ITransient.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  170. [目录白名单] framework/WitchC/DependencyInjection/Enums/InjectionActions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  171. [目录白名单] framework/WitchC/DependencyInjection/Enums/InjectionPatterns.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  172. [目录白名单] framework/WitchC/DependencyInjection/Enums/RegisterType.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  173. [目录白名单] framework/WitchC/DependencyInjection/Extensions/DependencyInjectionExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  174. [目录白名单] framework/WitchC/DependencyInjection/Options/DependencyInjectionSettingsOptions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  175. [目录白名单] framework/WitchC/DependencyInjection/Providers/INamedServiceProvider.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  176. [目录白名单] framework/WitchC/DependencyInjection/Providers/NamedServiceProvider.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  177. [目录白名单] framework/WitchC/DependencyInjection/Scoped.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  178. [目录白名单] framework/WitchC/Extensions/CollectionExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  179. [目录白名单] framework/WitchC/Extensions/DateTimeExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  180. [目录白名单] framework/WitchC/Extensions/DictionaryExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  181. [目录白名单] framework/WitchC/Extensions/EnumExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  182. [目录白名单] framework/WitchC/Extensions/GuidExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  183. [目录白名单] framework/WitchC/Extensions/HttpContextExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  184. [目录白名单] framework/WitchC/Extensions/JsonExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  185. [目录白名单] framework/WitchC/Extensions/LinqExpressionExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  186. [目录白名单] framework/WitchC/Extensions/ObjectExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  187. [目录白名单] framework/WitchC/Extensions/StreamExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  188. [目录白名单] framework/WitchC/Extensions/StringExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  189. [目录白名单] framework/WitchC/Extensions/TaskExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  190. [目录白名单] framework/WitchC/Extensions/TypeExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  191. [目录白名单] framework/WitchC/GlobalUsings.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  192. [目录白名单] framework/WitchC/WitchC.csproj -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  193. [落位规则：扩展类必须放 Extensions 目录] framework/WitchC/WitchCExtensions.cs -> 移动到所在项目的 Extensions/ 目录下；先检索是否已有同名扩展方法
+  194. [目录白名单] framework/WitchC/WitchCExtensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  195. [目录白名单] samples/witchc-web-api/WitchC.AppHost/AppHost.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  196. [目录白名单] samples/witchc-web-api/WitchC.AppHost/WitchC.AppHost.csproj -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  197. [目录白名单] samples/witchc-web-api/WitchC.RBAC.Application/Services/IRoleService.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  198. [目录白名单] samples/witchc-web-api/WitchC.RBAC.Application/Services/RoleService.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  199. [目录白名单] samples/witchc-web-api/WitchC.RBAC.Application/WitchC.RBAC.Application.csproj -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  200. [目录白名单] samples/witchc-web-api/WitchC.RBAC.Domain/Entities/Permission.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  201. [目录白名单] samples/witchc-web-api/WitchC.RBAC.Domain/Entities/Role.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  202. [目录白名单] samples/witchc-web-api/WitchC.RBAC.Domain/Entities/User.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  203. [目录白名单] samples/witchc-web-api/WitchC.RBAC.Domain/Repositories/IRoleRepository.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  204. [目录白名单] samples/witchc-web-api/WitchC.RBAC.Domain/Repositories/IUserRepository.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  205. [目录白名单] samples/witchc-web-api/WitchC.RBAC.Domain/WitchC.RBAC.Domain.csproj -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  206. [目录白名单] samples/witchc-web-api/WitchC.RBAC.Infrastructure/Repositories/SqlSugarRepositories.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  207. [目录白名单] samples/witchc-web-api/WitchC.RBAC.Infrastructure/WitchC.RBAC.Infrastructure.csproj -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  208. [目录白名单] samples/witchc-web-api/WitchC.RBAC.UnitTests/UnitTest1.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  209. [目录白名单] samples/witchc-web-api/WitchC.RBAC.UnitTests/WitchC.RBAC.UnitTests.csproj -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  210. [落位规则：扩展类必须放 Extensions 目录] samples/witchc-web-api/WitchC.ServiceDefaults/Extensions.cs -> 移动到所在项目的 Extensions/ 目录下；先检索是否已有同名扩展方法
+  211. [目录白名单] samples/witchc-web-api/WitchC.ServiceDefaults/Extensions.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  212. [目录白名单] samples/witchc-web-api/WitchC.ServiceDefaults/WitchC.ServiceDefaults.csproj -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  213. [目录白名单] samples/witchc-web-api/WitchC.Web.API/Controllers/DebugController.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  214. [目录白名单] samples/witchc-web-api/WitchC.Web.API/Controllers/RolesController.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  215. [目录白名单] samples/witchc-web-api/WitchC.Web.API/Controllers/TestController.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  216. [目录白名单] samples/witchc-web-api/WitchC.Web.API/Controllers/TestDIController.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  217. [目录白名单] samples/witchc-web-api/WitchC.Web.API/Program.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  218. [目录白名单] samples/witchc-web-api/WitchC.Web.API/TestServices.cs -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  219. [目录白名单] samples/witchc-web-api/WitchC.Web.API/WitchC.Web.API.csproj -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+  220. [目录白名单] samples/witchc-web-api/Witchc.Web.Entities/Witchc.Web.Entities.csproj -> 先检索该文件应归属哪一层（Domain/Application/Infrastructure/Web/Tests），移动过去；若确需新目录，先与团队确认后更新规则配置
+------------------------------------------------------------

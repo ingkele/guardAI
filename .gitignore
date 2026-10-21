@@ -1,0 +1,19 @@
+# guardAI 台账（本地记录，不出本机）
+.guard/records/
+
+# 自举状态（可再生：guardAI index / check 自动生成，换机器重跑即可）
+.guard/capability-index.json
+.guard/duplicates-baseline.json
+
+# 构建产物（发版产物 dist/ 体积大，走发布渠道不进库）
+bin/
+obj/
+dist/
+
+# IDE / 编辑器缓存
+.vs/
+*.user
+*.suo
+
+# 本地日志
+*.log

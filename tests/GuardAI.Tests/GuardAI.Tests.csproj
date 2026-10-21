@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <!-- 测试代码不要求公共 API XML 注释（生产代码仍要求，见 Directory.Build.props） -->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\GuardAI.Core\GuardAI.Core.csproj" />
+    <ProjectReference Include="..\..\src\GuardAI.Checks\GuardAI.Checks.csproj" />
+    <ProjectReference Include="..\..\src\GuardAI.Init\GuardAI.Init.csproj" />
+    <ProjectReference Include="..\..\src\GuardAI.Cli\GuardAI.Cli.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,21 @@
+<Project>
+
+  <!--
+    guardAI 全局构建属性。
+    自举原则：guardAI 自身仓库必须是规范的示范——Nullable 开启、警告即错误、公共 API 全中文 XML 注释。
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <Version>0.3.3</Version>
+    <Authors>ingkele</Authors>
+    <Product>guardAI</Product>
+    <Description>AI 时代的项目骨架守卫：确定性引擎裁判合规，AI 只做装配。</Description>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,16 @@
+# guardAI 规范门禁（由 guardAI init 生成）
+# 说明：CI 是与"谁写的代码"无关的底线闸口——人、任何 AI 工具产出的代码都一视同仁。
+name: guardAI
+
+on:
+  pull_request:
+  push:
+    branches: [main, master, develop]
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 规范守卫
+        run: guardAI check --repo . --mode all --trigger ci
