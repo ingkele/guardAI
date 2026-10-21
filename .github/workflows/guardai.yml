@@ -25,4 +25,4 @@ jobs:
         run: dotnet publish src/GuardAI.Cli/GuardAI.Cli.csproj -c Release -o "$RUNNER_TEMP/guardai-build"
 
       - name: 规范守卫
-        run: "$RUNNER_TEMP/guardai-build/GuardAI.Cli" check --repo . --mode all --trigger ci
+        run: $RUNNER_TEMP/guardai-build/GuardAI.Cli check --repo . --mode all --trigger ci
