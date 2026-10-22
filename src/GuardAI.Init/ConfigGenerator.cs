@@ -1,4 +1,6 @@
 using System.Text;
+using GuardAI.AI;
+using GuardAI.AI.Config;
 using GuardAI.Core.Config;
 
 namespace GuardAI.Init;
@@ -6,7 +8,10 @@ namespace GuardAI.Init;
 /// <summary>
 /// 规则配置生成器：根据扫描结果产出 guardai.yml（规则资产）。
 /// </summary>
-/// <remarks>生成的配置可人工核对修改——AI/模板装配只出配置，判定永远归引擎。</remarks>
+/// <remarks>
+/// 生成的配置可人工核对修改——AI/模板装配只出配置，判定永远归引擎。
+/// AI 装配建议（init --ai）以"增量"方式合并：模板基线保留，AI 条目去重后追加并标注来源。
+/// </remarks>
 public static class ConfigGenerator
 {
     /// <summary>AI 惯用的野目录黑名单（与 guard-tool 预设一致）。</summary>
@@ -20,9 +25,12 @@ public static class ConfigGenerator
     /// 生成 guardai.yml 文本。
     /// </summary>
     /// <param name="scan">项目扫描结果。</param>
+    /// <param name="advice">AI 装配建议（可空；非空时以增量方式合并进白名单/落位/豁免）。</param>
+    /// <param name="aiConfig">AI 接入配置（可空；非空时把 ai: 段写入配置，review 开箱即用）。</param>
     /// <returns>规则配置 YAML 文本。</returns>
-    public static string Generate(ProjectScanResult scan)
+    public static string Generate(ProjectScanResult scan, InitAdvice? advice = null, AIConfig? aiConfig = null)
     {
+        advice ??= InitAdvice.Empty;
         var sb = new StringBuilder();
         sb.AppendLine("# ============================================================");
         sb.AppendLine("# guardAI 项目骨架规则配置（由 guardAI init 生成，可人工修改）");
@@ -35,7 +43,9 @@ public static class ConfigGenerator
         sb.AppendLine();
         sb.AppendLine("# 项目形态：app（应用）/ library（类库）。落位规则按 scope 匹配此值才生效");
         sb.AppendLine("# init 自动判定，可人工修改（类库项目的扩展类放模块根是惯例，落位规则 scope: app 不适用）");
-        sb.AppendLine($"project_type: {(scan.ProjectType == ProjectTypeKind.Library ? "library" : "app")}");
+        sb.AppendLine(advice.ProjectType is not null
+            ? $"project_type: {advice.ProjectType}   # AI 装配建议（init --ai），可人工改"
+            : $"project_type: {(scan.ProjectType == ProjectTypeKind.Library ? "library" : "app")}");
         if (scan.ProjectTypeOverrides.Count > 0)
         {
             sb.AppendLine();
@@ -71,18 +81,34 @@ public static class ConfigGenerator
         sb.AppendLine("# 前段是 init 实测的目录基线快照（每层既有目录一条 '目录/*'，精确放行存量骨架）；");
         sb.AppendLine("# 后段是通用兜底；新增目录先与团队确认后补进来");
         sb.AppendLine("allowed_dirs:");
+        var allowedSeen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var (path, purpose) in AllowedDirs(scan))
         {
+            allowedSeen.Add(path);
             sb.AppendLine($"  - path: {path}");
             sb.AppendLine($"    purpose: {purpose}");
+        }
+
+        // AI 装配建议（init --ai）：增量追加，与模板基线重复的丢弃
+        var extraAllowed = advice.AllowedDirs.Where(i => allowedSeen.Add(i.Path)).ToList();
+        if (extraAllowed.Count > 0)
+        {
+            sb.AppendLine("  # —— 以下为 AI 装配建议补充（init --ai），可人工增删 ——");
+            foreach (var item in extraAllowed)
+            {
+                sb.AppendLine($"  - path: {item.Path}");
+                sb.AppendLine($"    purpose: {item.Purpose}");
+            }
         }
 
         sb.AppendLine();
         sb.AppendLine("# 落位规则：文件名命中 file_pattern 时，所在目录必须命中 dir_pattern");
         sb.AppendLine("# scope: 适用项目形态（app / library / all），只在 project_type 匹配时生效");
         sb.AppendLine("placement_rules:");
+        var placementSeen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var (name, filePattern, dirPattern, suggest, scope) in PlacementRules())
         {
+            placementSeen.Add(name);
             sb.AppendLine($"  - name: {name}");
             sb.AppendLine($"    file_pattern: \"{filePattern}\"");
             sb.AppendLine($"    dir_pattern: \"{dirPattern}\"");
@@ -90,13 +116,44 @@ public static class ConfigGenerator
             sb.AppendLine($"    scope: {scope}");
         }
 
+        var extraPlacements = advice.PlacementRules
+            .Where(p => placementSeen.Add(p.Name)).ToList();
+        if (extraPlacements.Count > 0)
+        {
+            sb.AppendLine("  # —— 以下为 AI 装配建议补充（init --ai），可人工增删 ——");
+            foreach (var rule in extraPlacements)
+            {
+                sb.AppendLine($"  - name: {rule.Name}");
+                sb.AppendLine($"    file_pattern: \"{rule.FilePattern}\"");
+                sb.AppendLine($"    dir_pattern: \"{rule.DirPattern}\"");
+                sb.AppendLine($"    suggest: \"{rule.Suggest}\"");
+                sb.AppendLine($"    scope: {rule.Scope}");
+            }
+        }
+
+        // 豁免：测试固定现场 + AI 装配建议（生成代码/第三方等有意放行）
+        var exclusions = new List<(string Path, string Reason)>();
         if (scan.HasTestFixtures)
         {
+            exclusions.Add(("tests/**/Fixtures/**", "回归测试固定现场，允许包含故意违规文件"));
+        }
+
+        var exclusionSeen = new HashSet<string>(
+            exclusions.Select(e => e.Path), StringComparer.OrdinalIgnoreCase);
+        exclusions.AddRange(advice.Exclusions
+            .Where(i => exclusionSeen.Add(i.Path))
+            .Select(i => (i.Path, i.Purpose)));
+
+        if (exclusions.Count > 0)
+        {
             sb.AppendLine();
-            sb.AppendLine("# 豁免：测试固定现场（含故意违规文件，用于回归）");
+            sb.AppendLine("# 豁免：有意放行的路径（含故意违规文件/生成代码/第三方等）");
             sb.AppendLine("exclusions:");
-            sb.AppendLine("  - path: tests/**/Fixtures/**");
-            sb.AppendLine("    reason: 回归测试固定现场，允许包含故意违规文件");
+            foreach (var (path, reason) in exclusions)
+            {
+                sb.AppendLine($"  - path: {path}");
+                sb.AppendLine($"    reason: {reason}");
+            }
         }
 
         // 重复检测（P3）：目前语法适配器只做 C#，非 .NET 生态不出这段（出了也不生效）
@@ -115,6 +172,23 @@ public static class ConfigGenerator
             {
                 sb.AppendLine($"    - {pattern}");
             }
+        }
+
+        // AI 接入段：init --ai 时把实际使用的接入配置写入，review 开箱即用
+        //（只写环境变量名不写密钥——密钥永不落文件）
+        if (aiConfig is not null)
+        {
+            sb.AppendLine();
+            sb.AppendLine("# AI 语义审查（guardAI review）与 AI 装配接入：大模型配置");
+            sb.AppendLine("# 密钥放环境变量不落配置：api_key_env 指定环境变量名");
+            sb.AppendLine("ai:");
+            sb.AppendLine($"  provider: {aiConfig.Provider}");
+            sb.AppendLine($"  base_url: \"{aiConfig.BaseUrl}\"");
+            sb.AppendLine($"  model: \"{aiConfig.Model}\"");
+            sb.AppendLine($"  api_key_env: {aiConfig.ApiKeyEnv}");
+            sb.AppendLine($"  max_tokens: {aiConfig.MaxTokens}");
+            sb.AppendLine($"  timeout_seconds: {aiConfig.TimeoutSeconds}");
+            sb.AppendLine($"  temperature: {aiConfig.Temperature.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
         }
 
         return sb.ToString();

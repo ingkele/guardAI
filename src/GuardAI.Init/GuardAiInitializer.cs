@@ -1,3 +1,6 @@
+using GuardAI.AI;
+using GuardAI.AI.Config;
+
 namespace GuardAI.Init;
 
 /// <summary>
@@ -31,15 +34,31 @@ public static class GuardAiInitializer
     /// <param name="templatesDir">模板目录（可空，自动查找）。</param>
     /// <param name="force">是否覆盖已有配置 / 全量安装 AI 钩子。</param>
     /// <param name="log">进度日志输出。</param>
+    /// <param name="aiAdvice">AI 装配建议（可空；非空时增量合并进 guardai.yml）。</param>
+    /// <param name="aiConfig">AI 接入配置（可空；非空时写入 ai: 段，review 开箱即用）。</param>
+    /// <param name="prescan">预扫描结果（可空；调用方已扫描过则复用，避免重复走盘）。</param>
     /// <returns>装配结果。</returns>
     /// <exception cref="DirectoryNotFoundException">目标目录或模板目录不存在时抛出。</exception>
-    public static InitResult Run(string repoPath, string? templatesDir, bool force, Action<string> log)
+    public static InitResult Run(string repoPath, string? templatesDir, bool force, Action<string> log,
+        InitAdvice? aiAdvice = null, AIConfig? aiConfig = null, ProjectScanResult? prescan = null)
     {
-        var scan = ProjectScanner.Scan(repoPath);
+        var scan = prescan ?? ProjectScanner.Scan(repoPath);
         var notes = new List<string>();
 
         log($"扫描完成：生态={scan.Kind}，骨架={scan.Skeleton}，" +
             $"解决方案 {scan.SolutionFiles.Count} 个，项目文件 {scan.ProjectFileCount} 个");
+
+        // AI 装配建议过确定性校验：会冤枉存量的落位规则丢弃（首跑零误报铁律——AI 建议也不许冤枉既有代码）
+        var effectiveAdvice = aiAdvice;
+        if (aiAdvice is not null)
+        {
+            var projectType = aiAdvice.ProjectType
+                ?? (scan.ProjectType == ProjectTypeKind.Library ? "library" : "app");
+            var (filtered, extraDropped) = InitAdviceValidator.FilterForFiles(
+                aiAdvice, InitAdviceValidator.CollectCodeFiles(scan), projectType);
+            effectiveAdvice = filtered;
+            notes.AddRange(extraDropped.Select(n => $"AI 装配建议（已丢弃）: {n}"));
+        }
 
         // 1. 生成规则配置（guardai.yml）
         var configPath = Path.Combine(scan.RepoPath, "guardai.yml");
@@ -47,12 +66,22 @@ public static class GuardAiInitializer
         if (File.Exists(configPath) && !force)
         {
             log("guardai.yml 已存在，跳过生成（--force 可重新生成）");
+            if (aiAdvice is not null)
+            {
+                notes.Add("guardai.yml 已存在，AI 装配建议未应用（--force 重新生成才会合并）");
+            }
         }
         else
         {
-            File.WriteAllText(configPath, ConfigGenerator.Generate(scan));
+            File.WriteAllText(configPath, ConfigGenerator.Generate(scan, effectiveAdvice, aiConfig));
             configWritten = true;
             log($"已生成规则配置: {configPath}");
+        }
+
+        // AI 装配建议中被 schema 校验丢弃的条目要让用户看见（安全网不静默）
+        if (effectiveAdvice is not null && effectiveAdvice.DroppedNotes.Count > 0)
+        {
+            notes.AddRange(effectiveAdvice.DroppedNotes.Select(n => $"AI 装配建议（已丢弃）: {n}"));
         }
 
         // 2. 补齐闸口（先计划后落盘）；模板磁盘优先、内嵌资源兜底（M2-3：单拷 exe 也可装配）

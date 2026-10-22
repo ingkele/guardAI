@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-21T22:28:05.9002766+08:00",
+  "generatedAt": "2026-10-22T13:09:38.5554461+08:00",
   "pairs": [
     {
       "key": "5ce026ca78a616a5",
@@ -60,6 +60,26 @@
       "key": "98df06dbd011096a",
       "a": "ScannerFixture.AddDirectory@tests/GuardAI.Tests/ProjectScannerTests.cs",
       "b": "ScannerFixture.AddFile@tests/GuardAI.Tests/ProjectScannerTests.cs"
+    },
+    {
+      "key": "1d1b27f8a06bcf6c",
+      "a": "OpenAICompatClient.ChatAsync@src/GuardAI.AI/Llm/OpenAICompatClient.cs",
+      "b": "OllamaClient.ChatAsync@src/GuardAI.AI/Llm/OllamaClient.cs"
+    },
+    {
+      "key": "07392f4020abfa75",
+      "a": "AIConfigParserTests.base_url_去尾斜杠@tests/GuardAI.Tests/AIConfigParserTests.cs",
+      "b": "AIConfigParserTests.openai完整配置_解析成功@tests/GuardAI.Tests/AIConfigParserTests.cs"
+    },
+    {
+      "key": "806fc9af1cd4ce06",
+      "a": "AIConfigParserTests.openai缺api_key_env_放行_本地无鉴权端点@tests/GuardAI.Tests/AIConfigParserTests.cs",
+      "b": "AIConfigParserTests.ollama_无需密钥_默认本地地址@tests/GuardAI.Tests/AIConfigParserTests.cs"
+    },
+    {
+      "key": "d4c674c8f9e72010",
+      "a": "LlmClientTests.openai协议_响应缺内容_抛LlmException@tests/GuardAI.Tests/LlmClientTests.cs",
+      "b": "LlmClientTests.openai协议_HTTP错误_抛LlmException带状态码@tests/GuardAI.Tests/LlmClientTests.cs"
     }
   ],
   "detectorVersion": 2

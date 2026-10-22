@@ -2,6 +2,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GuardAI.Core\GuardAI.Core.csproj" />
+    <!-- AI 装配（init 的 ai 选项）：装配层调用 AI 能力产配置建议，依赖单向（AI 层保持零依赖） -->
+    <ProjectReference Include="..\GuardAI.AI\GuardAI.AI.csproj" />
   </ItemGroup>
 
   <!-- 闸口模板随产物分发（单一事实来源：仓库根 templates/ 目录） -->

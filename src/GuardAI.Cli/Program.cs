@@ -1,4 +1,5 @@
-﻿using GuardAI.AI.Config;
+﻿using GuardAI.AI;
+using GuardAI.AI.Config;
 using GuardAI.AI.Llm;
 using GuardAI.AI.Review;
 using GuardAI.Checks.Assets;
@@ -45,7 +46,7 @@ internal static class Program
             {
                 "check" => RunCheck(options),
                 "review" => await RunReview(options),
-                "init" => RunInit(options),
+                "init" => await RunInit(options),
                 "doctor" => RunDoctor(options),
                 "ui" => RunUi(options),
                 "mcp" => RunMcp(options),
@@ -402,9 +403,11 @@ internal static class Program
     }
 
     /// <summary>
-    /// 执行装配命令：扫描 → 生成规则配置 → 补齐闸口 → 首检。
+    /// 执行装配命令：扫描 → 生成规则配置（--ai 时含 AI 装配建议）→ 补齐闸口 → 首检。
     /// </summary>
-    private static int RunInit(Dictionary<string, string?> options)
+    /// <param name="options">命令选项（repo/templates/yes/force/ai/ai-*）。</param>
+    /// <returns>退出码（0 成功 / 1 首检发现违规 / 2 配置或环境错误）。</returns>
+    private static async Task<int> RunInit(Dictionary<string, string?> options)
     {
         var repo = Path.GetFullPath(Get(options, "repo") ?? ".");
         var yes = options.ContainsKey("yes");
@@ -412,7 +415,43 @@ internal static class Program
 
         Console.WriteLine($"guardAI init：目标仓库 {repo}");
 
-        var result = GuardAiInitializer.Run(repo, Get(options, "templates"), force, Console.WriteLine);
+        InitAdvice? advice = null;
+        AIConfig? usedAiConfig = null;
+        ProjectScanResult? prescan = null;
+
+        // AI 装配（--ai）：模型分析仓库结构产配置建议，schema 校验后确定性合并
+        // AI 只装配不裁判——合规判定永远归引擎
+        if (options.ContainsKey("ai"))
+        {
+            if (File.Exists(Path.Combine(repo, "guardai.yml")) && !force)
+            {
+                // 建议合不进已存在的配置，不值得花模型调用
+                Console.WriteLine("提示: guardai.yml 已存在且未加 --force，跳过 AI 装配建议（避免空跑模型）");
+            }
+            else
+            {
+                var aiConfig = ResolveInitAiConfig(options, repo);
+                prescan = ProjectScanner.Scan(repo);
+                Console.WriteLine("正在请求 AI 装配建议（大模型分析仓库结构，只发结构摘要不发代码内容）...");
+                var advised = await AdviseWithCancelAsync(aiConfig, InitDigest.Build(prescan));
+                if (advised is null)
+                {
+                    return ExitError;
+                }
+
+                advice = advised;
+                usedAiConfig = aiConfig;
+                Console.WriteLine($"AI 装配建议：目录白名单 +{advice.AllowedDirs.Count}，" +
+                    $"落位规则 +{advice.PlacementRules.Count}，豁免 +{advice.Exclusions.Count}");
+                foreach (var note in advice.DroppedNotes)
+                {
+                    Console.WriteLine($"提示: AI 装配建议（已丢弃）: {note}");
+                }
+            }
+        }
+
+        var result = GuardAiInitializer.Run(repo, Get(options, "templates"), force, Console.WriteLine,
+            advice, usedAiConfig, prescan);
         foreach (var note in result.Notes)
         {
             Console.WriteLine($"提示: {note}");
@@ -443,6 +482,95 @@ internal static class Program
         checkOptions.Remove("yes");
         checkOptions.Remove("force");
         return RunCheck(checkOptions);
+    }
+
+    /// <summary>
+    /// 带 Ctrl+C 取消贯通的 AI 装配建议调用（与 review 同一套取消/超时语义）。
+    /// </summary>
+    /// <param name="aiConfig">AI 接入配置。</param>
+    /// <param name="digest">仓库结构摘要。</param>
+    /// <returns>装配建议；取消或调用失败返回 null（错误信息已输出）。</returns>
+    private static async Task<InitAdvice?> AdviseWithCancelAsync(AIConfig aiConfig, string digest)
+    {
+        using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(aiConfig.TimeoutSeconds) };
+        var client = LlmClientFactory.Create(http, aiConfig);
+        using var cts = new CancellationTokenSource();
+        ConsoleCancelEventHandler onCancel = (_, e) => { e.Cancel = true; cts.Cancel(); };
+        Console.CancelKeyPress += onCancel;
+        try
+        {
+            return await InitAiAdvisor.AdviseAsync(client, digest, cts.Token);
+        }
+        catch (LlmException ex)
+        {
+            Fail(ex.Message);
+            return null;
+        }
+        catch (OperationCanceledException) when (cts.IsCancellationRequested)
+        {
+            Console.Error.WriteLine("已取消: 用户中断 AI 装配建议调用。");
+            return null;
+        }
+        catch (Exception ex) when (ex is OperationCanceledException or TimeoutException)
+        {
+            Fail($"AI 装配建议调用超时（当前 ai.timeout_seconds={aiConfig.TimeoutSeconds}），"
+                + "建议调大 timeout_seconds 后重试。");
+            return null;
+        }
+        finally
+        {
+            // 注销处理器：cts 释放后残留处理器会踩 ObjectDisposedException
+            Console.CancelKeyPress -= onCancel;
+        }
+    }
+
+    /// <summary>
+    /// 解析 init --ai 的模型接入配置：命令行 --ai-* 选项优先，其次已有 guardai.yml 的 ai: 段。
+    /// </summary>
+    /// <param name="options">命令选项。</param>
+    /// <param name="repo">目标仓库根目录。</param>
+    /// <returns>AI 接入配置。</returns>
+    /// <exception cref="FormatException">接入信息不足或协议名非法。</exception>
+    private static AIConfig ResolveInitAiConfig(Dictionary<string, string?> options, string repo)
+    {
+        var provider = (Get(options, "ai-provider") ?? AIConfig.ProviderOpenAI).Trim().ToLowerInvariant();
+        if (provider is not (AIConfig.ProviderOpenAI or AIConfig.ProviderAnthropic or AIConfig.ProviderOllama))
+        {
+            throw new FormatException($"不支持的 ai.provider: {provider}（可用：openai / anthropic / ollama）");
+        }
+
+        if (Get(options, "ai-provider") is not null || Get(options, "ai-model") is not null
+            || Get(options, "ai-base-url") is not null || Get(options, "ai-api-key-env") is not null)
+        {
+            if (Get(options, "ai-model") is not { } model || string.IsNullOrWhiteSpace(model))
+            {
+                throw new FormatException("init --ai 使用命令行接入时必须给 --ai-model（如 mimo-v2.6-pro）");
+            }
+
+            var baseUrl = Get(options, "ai-base-url") ?? provider switch
+            {
+                AIConfig.ProviderAnthropic => AIConfig.DefaultAnthropicBaseUrl,
+                AIConfig.ProviderOllama => AIConfig.DefaultOllamaBaseUrl,
+                _ => AIConfig.DefaultOpenAIBaseUrl,
+            };
+            var apiKeyEnv = Get(options, "ai-api-key-env");
+            if (provider == AIConfig.ProviderAnthropic && string.IsNullOrWhiteSpace(apiKeyEnv))
+            {
+                throw new FormatException("anthropic 协议必须给 --ai-api-key-env（API 强制鉴权头）");
+            }
+
+            return new AIConfig(provider, baseUrl, model, apiKeyEnv);
+        }
+
+        // 回落已有 guardai.yml 的 ai: 段（review 用的同一套配置）
+        var configPath = FindConfig(repo);
+        var root = GuardYaml.Parse(File.ReadAllText(configPath));
+        return AIConfigParser.Parse(root, Path.GetFileName(configPath))
+            ?? throw new FormatException("""
+                init --ai 需要模型接入配置。两种给法：
+                ① 命令行选项：--ai-provider openai --ai-model <模型名> --ai-base-url <地址> --ai-api-key-env <环境变量名>
+                ② 在 guardai.yml 写 ai: 段（provider / model / api_key_env / base_url）
+                """);
     }
 
     /// <summary>
@@ -604,6 +732,8 @@ internal static class Program
               guardAI review [--repo <路径>] [--mode changed|staged|base] [--base <git引用>]
                              [--config <文件>] [--report <文件>] [--json] [--fail-on error|warn|info]
               guardAI init  [--repo <路径>] [--templates <目录>] [--yes] [--force]
+                            [--ai [--ai-provider openai|anthropic|ollama] [--ai-model <模型>]
+                                  [--ai-base-url <地址>] [--ai-api-key-env <环境变量名>]]
               guardAI doctor [--repo <路径>] [--templates <目录>]
               guardAI ui [--repo <路径>] [--port <端口>] [--no-open]
               guardAI mcp [--repo <路径>]
@@ -615,6 +745,8 @@ internal static class Program
               review   AI 语义审查：对改动做命名/注释/分层/复用审查（大模型，支持 OpenAI 协议/Anthropic/Ollama）
                        默认只出报告不卡流程（AI 不当最终裁判）；--fail-on 才按级别拦截
               init     装配：扫描项目 → 生成规则配置 → 补齐 CI/pre-commit/AI hook → 首检
+                       --ai 用大模型分析仓库结构产配置建议（白名单/落位/豁免，每条带理由）再合并，
+                       根治首跑误报；AI 只装配不裁判，判定永远归引擎
               doctor   环境与配置自检
               ui       打开本地台账网页：审查记录 / AI hook 结论 / 闭环率（记录不出本机）
               mcp      启动 MCP server（stdio）：给 AI 客户端搬运 scan_project / generate_config / get_report 三工具

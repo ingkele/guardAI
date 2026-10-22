@@ -62,6 +62,16 @@ allowed_dirs:
     purpose: init 实测既有子目录
   - path: src/GuardAI.Core/Reporting/*
     purpose: init 实测既有子目录
+  - path: src/GuardAI.AI/*
+    purpose: AI 能力层（v0.4.0 新增，人工确认后补进）
+  - path: src/GuardAI.AI/Config/*
+    purpose: AI 接入配置解析（v0.4.0 新增，人工确认后补进）
+  - path: src/GuardAI.AI/Llm/*
+    purpose: 三协议大模型客户端（v0.4.0 新增，人工确认后补进）
+  - path: src/GuardAI.AI/Review/*
+    purpose: AI 语义审查员（v0.4.0 新增，人工确认后补进）
+  - path: src/GuardAI.AI/Init/*
+    purpose: AI 装配顾问（init --ai，人工确认后补进）
   - path: src/GuardAI.Init/*
     purpose: init 实测既有子目录
   - path: tests/*
