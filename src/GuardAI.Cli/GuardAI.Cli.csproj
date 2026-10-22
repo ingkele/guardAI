@@ -7,6 +7,11 @@
     <ProjectReference Include="..\GuardAI.AI\GuardAI.AI.csproj" />
   </ItemGroup>
 
+  <!-- 参数解析/帮助文本为 CLI 内部件，测试工程直接锁行为 -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="GuardAI.Tests" />
+  </ItemGroup>
+
   <!-- 闸口模板随 CLI 产物分发 -->
   <ItemGroup>
     <None Include="..\..\templates\**\*" LinkBase="templates" CopyToOutputDirectory="PreserveNewest" />

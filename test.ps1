@@ -3,25 +3,28 @@
 .SYNOPSIS
     guardAI 统一测试脚本——输入项目路径，勾选测试项，一键跑完。
 .DESCRIPTION
-    测试项：init（装配闸口）/ check（规范检查）/ ui（台账网页，浏览器自动打开，看完回来按回车停止）。
+    测试项：init（装配闸口）/ check（规范检查）/ strict（严格审计）/ review（AI 语义审查）/ learn（AI 规则发现）/ ui（台账网页，浏览器自动打开，看完回来按回车停止）。
+    AI 触发（review/learn/init -Ai）需要 guardai.yml 的 ai: 段 + 环境变量密钥，会消耗大模型 token。
     交互模式：直接运行本脚本（或双击 test.cmd），按提示输入路径、勾选测试项。
     参数模式：.\test.ps1 -Repo "E:\某项目" -Steps init,check
     全部项目都用同一份产物 dist\win-x64\GuardAI.Cli.exe，可用 -Exe 覆盖。
 .NOTES
-    来源：guardAI v0.3.1 测试驱动脚本（2026-10-21）。脚本内不含固定盘符路径，可整体拷走。
+    来源：guardAI v0.3.1 测试驱动脚本（2026-10-21），v0.5.0 起含 AI 触发项。脚本内不含固定盘符路径，可整体拷走。
 #>
 [CmdletBinding()]
 param(
     # 要测的项目路径（不填则交互询问）
     [string]$Repo,
-    # 测试项：init / check / ui，可多选（不填则交互勾选）
+    # 测试项：init / check / strict / review / learn / ui，可多选（不填则交互勾选）
     [string[]]$Steps,
     # 被测程序路径（默认脚本旁 dist\win-x64\GuardAI.Cli.exe）
     [string]$Exe,
     # ui 时不自动打开浏览器
     [switch]$NoBrowser,
     # check 用严格审计模式（存量重复也报违规，案例验收用）
-    [switch]$Strict
+    [switch]$Strict,
+    # init 带 --ai（AI 装配建议，需模型接入配置）
+    [switch]$Ai
 )
 
 $ErrorActionPreference = 'Stop'
@@ -34,12 +37,14 @@ if (-not (Test-Path $Exe)) {
     exit 1
 }
 
-# ---------- 测试项定义（执行顺序固定 init -> check -> ui） ----------
+# ---------- 测试项定义（执行顺序固定 init -> check -> strict -> review -> learn -> ui） ----------
 $stepDefs = [ordered]@{
-    init  = '装配闸口（生成 guardai.yml / AGENTS.md 等）'
-    check = '规范检查（结构 + 重复，全量扫描）'
+    init   = '装配闸口（生成 guardai.yml / AGENTS.md 等；-Ai 时附 AI 装配建议）'
+    check  = '规范检查（结构 + 重复，全量扫描）'
     strict = '严格审计（check --strict：存量重复也报——案例验收专用）'
-    ui    = '台账网页（浏览器自动打开，看完回来按回车停止）'
+    review = 'AI 触发：语义审查（需 ai: 段 + 环境变量密钥，消耗 token；报告落 .guard/records/reviews/）'
+    learn  = 'AI 触发：规则发现（需密钥，消耗 token；出候选规则，人工确认后落地）'
+    ui     = '台账网页（浏览器自动打开，看完回来按回车停止）'
 }
 $stepNames = @($stepDefs.Keys)
 
@@ -99,7 +104,7 @@ $Steps = @($Steps |
     Where-Object { $stepDefs.Contains($_) } |
     Select-Object -Unique)
 if ($Steps.Count -eq 0) {
-    Write-Host '[错误] 没有有效的测试项（可选：init / check / ui）' -ForegroundColor Red
+    Write-Host '[错误] 没有有效的测试项（可选：init / check / strict / review / learn / ui）' -ForegroundColor Red
     exit 1
 }
 $Steps = @($Steps | Where-Object { $_ -ne 'ui' }) + @($Steps | Where-Object { $_ -eq 'ui' })
@@ -170,24 +175,36 @@ foreach ($step in $Steps) {
     }
 
     $stepArgs = switch ($step) {
-        # init 自带 [Y/n] 确认，测试场景统一 --yes 一键跳过；init 尾部自带首检
-        'init' { @('init', '--repo', $Repo, '--yes') }
+        # init 自带 [Y/n] 确认，测试场景统一 --yes 一键跳过；init 尾部自带首检；-Ai 附 AI 装配建议
+        'init' {
+            $a = @('init', '--repo', $Repo, '--yes')
+            if ($Ai) { $a += '--ai' }
+            $a
+        }
         'check' {
             $a = @('check', '--repo', $Repo, '--mode', 'all')
             if ($Strict) { $a += '--strict' }   # 严格审计：基线内存量重复也报
             $a
         }
         'strict' { @('check', '--repo', $Repo, '--mode', 'all', '--strict') }   # 案例验收：存量重复也报
+        # AI 触发（需 ai: 段 + 环境变量密钥）：默认只报告不卡流程，报告自动落盘
+        'review' { @('review', '--repo', $Repo, '--report', (Join-Path $Repo '.guard\records\reviews\test-script-report.json')) }
+        'learn' { @('learn', '--repo', $Repo, '--report', (Join-Path $Repo '.guard\records\learn-report.json')) }
     }
     # 输出直接透传（stdout/stderr 原样到控制台，编码最稳），只记退出码与耗时
     & $Exe @stepArgs
     $code = $LASTEXITCODE
     $sw.Stop()
 
-    $note = Get-LastRunNote $Repo
-    # 退出码语义：0 = 通过；1 = 有违规（工具跑通）；2 = 工具出错
+    $note = switch ($step) {
+        # 台账口径只适用 check 系；AI 步骤的说明指向各自产物
+        'review' { 'AI 审查报告见 .guard/records/reviews/test-script-report.json' }
+        'learn' { '候选规则见 .guard/records/learn-report.json（人工确认后才进规则资产）' }
+        default { Get-LastRunNote $Repo }
+    }
+    # 退出码语义：0 = 通过；1 = 有违规（工具跑通）；2 = 工具出错；AI 步骤 0 只代表跑完（结论看报告）
     $status = switch ($code) {
-        0 { '✔ 通过' }
+        0 { if ($step -in @('review', 'learn')) { '✔ 完成' } else { '✔ 通过' } }
         1 { '⚠ 有违规' }
         default { "✘ 出错(码 $code)" }
     }

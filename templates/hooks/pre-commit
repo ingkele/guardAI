@@ -2,5 +2,7 @@
 # guardAI pre-commit 钩子（由 guardAI init 生成）
 # 作用：不合规的文件进不了版本库。退出码非 0 则中止提交。
 # 调用方式与 CI 完全一致——同一条命令，只是挂载点不同。
-guardAI check --repo . --mode changed --trigger hook
+# 下行的调用命令占位符由 init 安装时替换为实际命令（绝对路径优先，不依赖 PATH）；
+# 手工复制本模板时，请把占位符换成你的 guardAI 调用方式。
+{{GUARDAI_CMD}} check --repo . --mode changed --trigger hook
 exit $?

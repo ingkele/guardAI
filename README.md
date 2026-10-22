@@ -38,10 +38,11 @@ dotnet run --project src/GuardAI.Cli -- init --repo D:\repos\MyProject --yes
 
 ### 方式三：懒人测试脚本
 
-双击 `test.cmd`（或 PowerShell 跑 `test.ps1`）：输入项目路径 → 勾选 `init / check / strict / ui` → 自动按序跑完出汇总表。也可一条命令直达：
+双击 `test.cmd`（或 PowerShell 跑 `test.ps1`）：输入项目路径 → 勾选 `init / check / strict / review / learn / ui` → 自动按序跑完出汇总表。其中 `review` / `learn` 是 **AI 触发项**（需 `ai:` 段 + 环境变量 KEY，消耗 token），`init` 加 `-Ai` 开关附 AI 装配建议。也可一条命令直达：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File test.ps1 -Repo "D:\你的项目" -Steps init,check
+powershell -ExecutionPolicy Bypass -File test.ps1 -Repo "D:\你的项目" -Steps review,learn   # 只跑 AI 触发
 ```
 
 ## 用法速览

@@ -314,10 +314,11 @@ public sealed class GateInstaller
 
     /// <summary>
     /// 安装 git 钩子（缺失创建、已有追加、Unix 下补执行权限）。
+    /// 模板里的调用命令占位符在此渲染为实际命令（绝对路径优先，不依赖 PATH）。
     /// </summary>
     private static GateInstallResult ApplyHook(string target, GateInstallAction action, string templatePath)
     {
-        var content = File.ReadAllText(templatePath);
+        var content = GuardAiCommand.Render(File.ReadAllText(templatePath));
         if (File.Exists(target))
         {
             var existing = File.ReadAllText(target);

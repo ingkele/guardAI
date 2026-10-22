@@ -42,7 +42,20 @@ internal static class Program
             }
 
             var command = args[0];
-            var options = ParseOptions(args[1..]);
+            var parsed = CliArgs.Parse(command, args[1..]);
+            if (parsed.HelpRequested)
+            {
+                // 子命令 -h/--help：只打印该命令用法，绝不静默执行命令（防误触）
+                Console.WriteLine(CliHelp.Build(command));
+                return ExitOk;
+            }
+
+            if (parsed.Error is not null)
+            {
+                return Fail(parsed.Error);
+            }
+
+            var options = parsed.Options;
             return command switch
             {
                 "check" => RunCheck(options),
@@ -53,7 +66,7 @@ internal static class Program
                 "ui" => RunUi(options),
                 "mcp" => RunMcp(options),
                 "index" => RunIndex(options),
-                "search" => RunSearch(options),
+                "search" => RunSearch(options, parsed.Positional),
                 _ => Fail($"未知命令: {command}（可用：check / review / init / learn / doctor / ui / mcp / index / search）"),
             };
         }
@@ -181,7 +194,10 @@ internal static class Program
             throw new FormatException($"未知收集模式: {mode}（可用：{string.Join(" / ", DiffCollector.SupportedModes)}）");
         }
 
-        var configPath = FindConfig(repo);
+        // --config 显式指定配置文件；缺省向上找 guardai.yml（与 check 同口径）
+        var configPath = Get(options, "config") is { } explicitConfig
+            ? Path.GetFullPath(explicitConfig)
+            : FindConfig(repo);
         var root = GuardYaml.Parse(File.ReadAllText(configPath));
         var aiConfig = AIConfigParser.Parse(root, Path.GetFileName(configPath));
         if (aiConfig is null)
@@ -354,12 +370,11 @@ internal static class Program
     /// <summary>
     /// 执行能力检索命令：按关键词查已有能力（写码先查，防重复造轮子）。
     /// </summary>
-    /// <param name="options">命令选项（位置参数=关键词；repo：目标仓库；top：返回上限）。</param>
+    /// <param name="options">命令选项（repo：目标仓库；top：返回上限）。</param>
+    /// <param name="keyword">位置参数=检索关键词。</param>
     /// <returns>退出码（0 成功 / 2 配置或环境错误）。</returns>
-    private static int RunSearch(Dictionary<string, string?> options)
+    private static int RunSearch(Dictionary<string, string?> options, string? keyword)
     {
-        // 位置参数（无值键）即检索关键词：guardAI search 上传 --repo D:\项目
-        var keyword = options.FirstOrDefault(kv => kv.Value is null).Key;
         if (string.IsNullOrWhiteSpace(keyword))
         {
             return Fail("用法: guardAI search <关键词> [--repo <路径>] [--top N]");
@@ -796,29 +811,6 @@ internal static class Program
     }
 
     /// <summary>
-    /// 解析 "--key value / --flag" 形式的参数。
-    /// </summary>
-    private static Dictionary<string, string?> ParseOptions(string[] args)
-    {
-        var options = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
-        for (var i = 0; i < args.Length; i++)
-        {
-            var key = args[i].TrimStart('-');
-            if (i + 1 < args.Length && !args[i + 1].StartsWith("--"))
-            {
-                options[key] = args[i + 1];
-                i++;
-            }
-            else
-            {
-                options[key] = null;
-            }
-        }
-
-        return options;
-    }
-
-    /// <summary>
     /// 取出带值选项。
     /// </summary>
     private static string? Get(Dictionary<string, string?> options, string key)
@@ -836,59 +828,10 @@ internal static class Program
     }
 
     /// <summary>
-    /// 打印使用说明。
+    /// 打印使用说明（文案单一来源在 <see cref="CliHelp"/>，全局帮助与子命令 --help 共用）。
     /// </summary>
     private static void PrintHelp()
     {
-        Console.WriteLine("""
-            guardAI —— AI 时代的项目骨架守卫（单入口：一条命令跑完所有检查）
-
-            用法:
-              guardAI check [--repo <路径>] [--mode changed|all] [--only structure|duplicate|all]
-                            [--config <文件>] [--report <文件>] [--html <文件>] [--json]
-                            [--trigger cli|hook|ci] [--no-record] [--update-baseline] [--strict]
-              guardAI review [--repo <路径>] [--mode changed|staged|base] [--base <git引用>]
-                             [--config <文件>] [--report <文件>] [--json] [--fail-on error|warn|info]
-              guardAI init  [--repo <路径>] [--templates <目录>] [--yes] [--force]
-                            [--ai [--ai-provider openai|anthropic|ollama] [--ai-model <模型>]
-                                  [--ai-base-url <地址>] [--ai-api-key-env <环境变量名>]]
-              guardAI learn [--repo <路径>] [--json] [--report <文件>]
-                            [--ai-provider openai|anthropic|ollama] [--ai-model <模型>]
-                            [--ai-base-url <地址>] [--ai-api-key-env <环境变量名>]
-              guardAI doctor [--repo <路径>] [--templates <目录>]
-              guardAI ui [--repo <路径>] [--port <端口>] [--no-open]
-              guardAI mcp [--repo <路径>]
-              guardAI index [--repo <路径>] [--output <文件>]
-              guardAI search <关键词> [--repo <路径>] [--top N]
-
-            命令:
-              check    执行检查（0=通过 / 1=违规 / 2=配置或环境错误），结果自动记入台账
-              review   AI 语义审查：对改动做命名/注释/分层/复用审查（大模型，支持 OpenAI 协议/Anthropic/Ollama）
-                       默认只出报告不卡流程（AI 不当最终裁判）；--fail-on 才按级别拦截
-              init     装配：扫描项目 → 生成规则配置 → 补齐 CI/pre-commit/AI hook → 首检
-                       --ai 用大模型分析仓库结构产配置建议（白名单/落位/豁免，每条带理由）再合并，
-                       根治首跑误报；AI 只装配不裁判，判定永远归引擎
-              learn    AI 规则发现员：审计 review 记录/违规台账/豁免清单，提炼候选规则
-                       （反复踩坑模式 → 规则建议，人工确认后进规则资产）——终结踩坑加规则
-              doctor   环境与配置自检
-              ui       打开本地台账网页：审查记录 / AI hook 结论 / 闭环率（记录不出本机）
-              mcp      启动 MCP server（stdio）：给 AI 客户端搬运 scan_project / generate_config / get_report 三工具
-              index    生成能力清单（.guard/capability-index.json）：公共方法快照，写码前检索的数据基础
-              search   按关键词检索已有能力（写码先查，防重复造轮子）
-
-            台账:
-              每次 check 自动写入 .guard/records/runs.jsonl（--no-record 关闭）；
-              违规指纹从最新运行消失即计为已修复，闭环率在 ui 网页查看。
-
-            示例:
-              guardAI check                       # 检查当前仓库的 git 变更
-              guardAI check --mode all            # 全量检查（CI 用）
-              guardAI check --html 报告.html      # 生成单页 HTML 体检报告（含与上次对比）
-              guardAI check --strict              # 严格审计：存量重复（基线内）也报违规，案例验收用
-              guardAI review                      # AI 审查当前改动（命名/注释/分层/复用）
-              guardAI review --mode base --base origin/main --fail-on error   # 审查分支差异并卡错误级
-              guardAI init --yes                  # 一条命令完成接入
-              guardAI ui                          # 打开本地台账网页
-            """);
+        Console.WriteLine(CliHelp.Build(null));
     }
 }
