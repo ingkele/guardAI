@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 供单元测试直接检验内部契约（如 LlmKey 密钥解析），不扩大公共 API 面 -->
+    <InternalsVisibleTo Include="GuardAI.Tests" />
+  </ItemGroup>
+
+</Project>

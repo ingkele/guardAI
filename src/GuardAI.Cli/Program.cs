@@ -1,4 +1,7 @@
-﻿using GuardAI.Checks.Assets;
+﻿using GuardAI.AI.Config;
+using GuardAI.AI.Llm;
+using GuardAI.AI.Review;
+using GuardAI.Checks.Assets;
 using GuardAI.Checks.Structure;
 using GuardAI.Cli;
 using GuardAI.Core.Config;
@@ -26,7 +29,7 @@ internal static class Program
     /// </summary>
     /// <param name="args">命令行参数。</param>
     /// <returns>退出码（0 通过 / 1 违规 / 2 配置或环境错误）。</returns>
-    public static int Main(string[] args)
+    public static async Task<int> Main(string[] args)
     {
         try
         {
@@ -41,13 +44,14 @@ internal static class Program
             return command switch
             {
                 "check" => RunCheck(options),
+                "review" => await RunReview(options),
                 "init" => RunInit(options),
                 "doctor" => RunDoctor(options),
                 "ui" => RunUi(options),
                 "mcp" => RunMcp(options),
                 "index" => RunIndex(options),
                 "search" => RunSearch(options),
-                _ => Fail($"未知命令: {command}（可用：check / init / doctor / ui / mcp / index / search）"),
+                _ => Fail($"未知命令: {command}（可用：check / review / init / doctor / ui / mcp / index / search）"),
             };
         }
         catch (Exception ex) when (ex is FormatException or FileNotFoundException
@@ -153,6 +157,148 @@ internal static class Program
         }
 
         return results.Sum(r => r.Violations.Count) > 0 ? ExitViolations : ExitOk;
+    }
+
+    /// <summary>
+    /// 执行语义审查命令：AI 审查员对改动做命名/注释/分层/复用等语义审查（引擎管机械项，AI 管语义项）。
+    /// </summary>
+    /// <param name="options">命令选项（repo/mode/base/config/report/json/fail-on）。</param>
+    /// <returns>退出码（0 默认仅报告 / --fail-on 命中时 1 / 2 配置或环境错误）。</returns>
+    private static async Task<int> RunReview(Dictionary<string, string?> options)
+    {
+        var repo = Path.GetFullPath(Get(options, "repo") ?? ".");
+        if (!Directory.Exists(repo))
+        {
+            return Fail($"目标目录不存在: {repo}");
+        }
+
+        var mode = (Get(options, "mode") ?? "changed").Trim().ToLowerInvariant();
+        if (!DiffCollector.SupportedModes.Contains(mode))
+        {
+            throw new FormatException($"未知收集模式: {mode}（可用：{string.Join(" / ", DiffCollector.SupportedModes)}）");
+        }
+
+        var configPath = FindConfig(repo);
+        var root = GuardYaml.Parse(File.ReadAllText(configPath));
+        var aiConfig = AIConfigParser.Parse(root, Path.GetFileName(configPath));
+        if (aiConfig is null)
+        {
+            return Fail("""
+                guardai.yml 缺少 ai: 配置段（AI 审查需要模型接入）。示例：
+                  ai:
+                    provider: openai          # openai（OpenAI 协议）/ anthropic / ollama
+                    model: gpt-4o-mini
+                    api_key_env: OPENAI_API_KEY   # 密钥放环境变量，不落配置文件（anthropic 必填；openai 无鉴权端点可省略）
+                    # base_url: https://api.openai.com/v1   # 可省略；兼容端点填自己的地址
+                    # ollama 示例：provider: ollama, model: qwen3:8b（无需 api_key_env）
+                """);
+        }
+
+        // AI 只做语义审查与建议（检察官），退出码默认 0 不卡流程——最终裁判是确定性引擎。
+        // Ctrl+C 取消：模型调用可中断，不干等 timeout_seconds
+        using var cts = new CancellationTokenSource();
+        ConsoleCancelEventHandler onCancel = (_, e) => { e.Cancel = true; cts.Cancel(); };
+        Console.CancelKeyPress += onCancel;
+        try
+        {
+            return await RunReviewCoreAsync(options, aiConfig, root, repo, mode, cts);
+        }
+        finally
+        {
+            // 注销处理器：cts 释放后若再触发 Ctrl+C，残留处理器会踩 ObjectDisposedException
+            Console.CancelKeyPress -= onCancel;
+        }
+    }
+
+    /// <summary>
+    /// review 命令主体（调模型、出报告、判退出码）。
+    /// </summary>
+    /// <param name="options">命令选项。</param>
+    /// <param name="aiConfig">AI 配置。</param>
+    /// <param name="root">guardai.yml 根字典（提炼规则摘要用）。</param>
+    /// <param name="repo">仓库根目录。</param>
+    /// <param name="mode">收集模式。</param>
+    /// <param name="cts">取消源（Ctrl+C 贯通）。</param>
+    /// <returns>退出码。</returns>
+    private static async Task<int> RunReviewCoreAsync(
+        Dictionary<string, string?> options, AIConfig aiConfig,
+        IReadOnlyDictionary<string, object?> root, string repo, string mode, CancellationTokenSource cts)
+    {
+        using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(aiConfig.TimeoutSeconds) };
+        var client = LlmClientFactory.Create(http, aiConfig);
+        var engine = new ReviewEngine(client, aiConfig);
+
+        ReviewReport report;
+        try
+        {
+            report = await engine.RunAsync(repo, mode, Get(options, "base"), ReviewPrompt.BuildRuleSummary(root), cts.Token);
+        }
+        catch (LlmException ex)
+        {
+            return Fail(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            // 无改动/环境异常等可控分支：给可行动提示，不炸原始堆栈
+            return Fail(ex.Message);
+        }
+        catch (OperationCanceledException) when (cts.IsCancellationRequested)
+        {
+            // 用户 Ctrl+C 取消与真超时是两种因，别把用户往 timeout_seconds 上引
+            Console.Error.WriteLine("已取消: 用户中断审查。");
+            return ExitError;
+        }
+        catch (Exception ex) when (ex is OperationCanceledException or TimeoutException)
+        {
+            return Fail($"模型调用超时（当前 ai.timeout_seconds={aiConfig.TimeoutSeconds}）。"
+                + "推理模型审查大改动需要更长时间——建议调大 ai.timeout_seconds（600 秒起步）或分批提交后审查。");
+        }
+
+        if (options.ContainsKey("json"))
+        {
+            report.WriteJson(Console.Out);
+        }
+        else
+        {
+            report.WriteText(Console.Out);
+        }
+
+        // 审查报告落台账区（.guard/records/reviews/，记录不出本机）
+        var reportPath = Get(options, "report") is { } custom
+            ? Path.GetFullPath(custom)
+            : Path.Combine(repo, Ledger.RecordsDir, "reviews", $"review-{report.GeneratedAt:yyyyMMdd-HHmmss}.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(reportPath)!);
+        using (var writer = new StreamWriter(reportPath))
+        {
+            report.WriteJson(writer);
+        }
+
+        // 提示走 stderr：--json 模式 stdout 必须是纯 JSON（机器消费不断流）
+        Console.Error.WriteLine($"审查报告已写入: {reportPath}");
+
+        // --fail-on error|warn|info：发现达到该级别才退出码 1（默认不拦截）
+        return Get(options, "fail-on") is { } failOn
+            ? (HitsFailLevel(report, failOn) ? ExitViolations : ExitOk)
+            : ExitOk;
+    }
+
+    /// <summary>
+    /// 判断报告中是否存在达到拦截级别的发现。
+    /// </summary>
+    /// <param name="report">审查报告。</param>
+    /// <param name="failOn">拦截级别（error / warn / info）。</param>
+    /// <returns>存在达标发现时 true。</returns>
+    /// <exception cref="FormatException">级别名非法。</exception>
+    private static bool HitsFailLevel(ReviewReport report, string failOn)
+    {
+        var threshold = failOn.Trim().ToLowerInvariant() switch
+        {
+            "error" => ReviewFinding.SeverityRank(ReviewFinding.SeverityError),
+            "warn" or "warning" => ReviewFinding.SeverityRank(ReviewFinding.SeverityWarn),
+            "info" => ReviewFinding.SeverityRank(ReviewFinding.SeverityInfo),
+            _ => throw new FormatException($"未知拦截级别: {failOn}（可用：error / warn / info）"),
+        };
+        return report.Findings.Any(f => ReviewFinding.SeverityRank(f.Severity) <= threshold);
     }
 
     /// <summary>
@@ -455,6 +601,8 @@ internal static class Program
               guardAI check [--repo <路径>] [--mode changed|all] [--only structure|duplicate|all]
                             [--config <文件>] [--report <文件>] [--html <文件>] [--json]
                             [--trigger cli|hook|ci] [--no-record] [--update-baseline] [--strict]
+              guardAI review [--repo <路径>] [--mode changed|staged|base] [--base <git引用>]
+                             [--config <文件>] [--report <文件>] [--json] [--fail-on error|warn|info]
               guardAI init  [--repo <路径>] [--templates <目录>] [--yes] [--force]
               guardAI doctor [--repo <路径>] [--templates <目录>]
               guardAI ui [--repo <路径>] [--port <端口>] [--no-open]
@@ -464,6 +612,8 @@ internal static class Program
 
             命令:
               check    执行检查（0=通过 / 1=违规 / 2=配置或环境错误），结果自动记入台账
+              review   AI 语义审查：对改动做命名/注释/分层/复用审查（大模型，支持 OpenAI 协议/Anthropic/Ollama）
+                       默认只出报告不卡流程（AI 不当最终裁判）；--fail-on 才按级别拦截
               init     装配：扫描项目 → 生成规则配置 → 补齐 CI/pre-commit/AI hook → 首检
               doctor   环境与配置自检
               ui       打开本地台账网页：审查记录 / AI hook 结论 / 闭环率（记录不出本机）
@@ -480,6 +630,8 @@ internal static class Program
               guardAI check --mode all            # 全量检查（CI 用）
               guardAI check --html 报告.html      # 生成单页 HTML 体检报告（含与上次对比）
               guardAI check --strict              # 严格审计：存量重复（基线内）也报违规，案例验收用
+              guardAI review                      # AI 审查当前改动（命名/注释/分层/复用）
+              guardAI review --mode base --base origin/main --fail-on error   # 审查分支差异并卡错误级
               guardAI init --yes                  # 一条命令完成接入
               guardAI ui                          # 打开本地台账网页
             """);

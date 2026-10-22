@@ -24,6 +24,7 @@
     <ProjectReference Include="..\..\src\GuardAI.Core\GuardAI.Core.csproj" />
     <ProjectReference Include="..\..\src\GuardAI.Checks\GuardAI.Checks.csproj" />
     <ProjectReference Include="..\..\src\GuardAI.Init\GuardAI.Init.csproj" />
+    <ProjectReference Include="..\..\src\GuardAI.AI\GuardAI.AI.csproj" />
     <ProjectReference Include="..\..\src\GuardAI.Cli\GuardAI.Cli.csproj" />
   </ItemGroup>
 

@@ -93,3 +93,13 @@ placement_rules:
     dir_pattern: "**/Extensions/**"
     suggest: "移动到所在项目的 Extensions/ 目录下；先检索是否已有同名扩展方法"
     scope: app
+
+# AI 语义审查（guardAI review）：大模型接入配置
+# 密钥放环境变量不落配置：api_key_env 指定环境变量名
+ai:
+  provider: openai
+  base_url: https://token-plan-cn.xiaomimimo.com/v1
+  model: mimo-v2.6-pro
+  api_key_env: MIMO_API_KEY
+  max_tokens: 16384   # 推理模型思考预算要给足
+  timeout_seconds: 600   # 推理模型大改动需要更长调用时间

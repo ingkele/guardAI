@@ -4,6 +4,7 @@
     <ProjectReference Include="..\GuardAI.Core\GuardAI.Core.csproj" />
     <ProjectReference Include="..\GuardAI.Checks\GuardAI.Checks.csproj" />
     <ProjectReference Include="..\GuardAI.Init\GuardAI.Init.csproj" />
+    <ProjectReference Include="..\GuardAI.AI\GuardAI.AI.csproj" />
   </ItemGroup>
 
   <!-- 闸口模板随 CLI 产物分发 -->
