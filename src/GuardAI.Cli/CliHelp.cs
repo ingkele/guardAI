@@ -51,15 +51,17 @@ internal static class CliHelp
             }),
         new(
             "review",
-            "guardAI review [--repo <路径>] [--mode changed|staged|base] [--base <git引用>]{nl}" +
+            "guardAI review [--repo <路径>] [--mode changed|staged|base|all] [--base <git引用>]{nl}" +
             "               [--config <文件>] [--report <文件>] [--json] [--fail-on error|warn|info]",
             "AI 语义审查：对改动做命名/注释/分层/复用审查（大模型，支持 OpenAI 协议/Anthropic/Ollama）。{nl}" +
             "默认只出报告不卡流程（AI 不当最终裁判）；--fail-on 才按级别拦截。{nl}" +
+            "模式：changed/staged/base 走 git 圈定改动；all 全量送审目录内代码文件（散文件/非 git 目录用）。{nl}" +
             "需要 guardai.yml 的 ai: 段 + 环境变量密钥（密钥只进环境变量，不落配置文件）。",
             new[]
             {
                 "guardAI review                      # AI 审查当前改动（命名/注释/分层/复用）",
                 "guardAI review --mode base --base origin/main --fail-on error   # 审查分支差异并卡错误级",
+                "guardAI review --mode all --repo ./案例目录   # 散文件目录全量送审（无需 git）",
             }),
         new(
             "init",

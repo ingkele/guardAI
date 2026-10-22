@@ -41,15 +41,16 @@ public static class DiffCollector
         RegexOptions.Compiled);
 
     /// <summary>合法收集模式（单一事实来源：CLI 与收集器共用同一校验；只读防外部改写）。</summary>
-    public static IReadOnlyList<string> SupportedModes { get; } = ["changed", "staged", "base"];
+    public static IReadOnlyList<string> SupportedModes { get; } = ["changed", "staged", "base", "all"];
 
     /// <summary>
     /// 收集送审差异文本。
     /// </summary>
     /// <param name="repoPath">仓库根目录。</param>
-    /// <param name="mode">收集模式：changed（工作区+暂存区相对 HEAD）/ staged（仅暂存区）/ base（相对指定引用）。</param>
+    /// <param name="mode">收集模式：changed（工作区+暂存区相对 HEAD）/ staged（仅暂存区）/ base（相对指定引用）/ all（全量代码文件，无需 git）。</param>
     /// <param name="baseRef">base 模式下的 git 引用（如 origin/main）。</param>
     /// <param name="cancellationToken">取消令牌（Ctrl+C 贯通到 git 收集阶段，不只模型调用）。</param>
+    /// <param name="isCodeFile">all 模式的代码文件过滤谓词（仓库相对路径，正斜杠）；null 表示不限扩展名收全部文本文件。由调用方注入（如成员解析器的扩展名注册表），收集器不依赖语言知识。</param>
     /// <returns>差异文本与统计（文本、文件数）。</returns>
     /// <exception cref="FormatException">收集模式非法。</exception>
     /// <exception cref="InvalidOperationException">git 执行失败或没有可审查的改动。</exception>
@@ -58,11 +59,17 @@ public static class DiffCollector
         string repoPath,
         string mode,
         string? baseRef = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        Func<string, bool>? isCodeFile = null)
     {
         if (!SupportedModes.Contains(mode))
         {
             throw new FormatException($"未知收集模式: {mode}（可用：{string.Join(" / ", SupportedModes)}）");
+        }
+
+        if (mode == "all")
+        {
+            return CollectAllFiles(repoPath, isCodeFile, cancellationToken);
         }
 
         var diff = mode switch
@@ -138,6 +145,110 @@ public static class DiffCollector
         }
 
         return (sb.ToString(), files);
+    }
+
+    /// <summary>
+    /// all 模式：全量收集目录内代码文件送审（无需 git，散文件/案例目录直接可审）。
+    /// </summary>
+    /// <param name="repoPath">目标根目录。</param>
+    /// <param name="isCodeFile">代码文件过滤谓词（仓库相对路径，正斜杠）；null 收全部文本文件。</param>
+    /// <param name="cancellationToken">取消令牌。</param>
+    /// <returns>送审文本与文件数。</returns>
+    /// <exception cref="InvalidOperationException">没有可审查的代码文件。</exception>
+    private static (string Text, int Files) CollectAllFiles(string repoPath, Func<string, bool>? isCodeFile, CancellationToken cancellationToken)
+    {
+        var sb = new StringBuilder();
+        var skipped = new List<string>();
+        var files = 0;
+
+        foreach (var full in EnumerateSourceFiles(repoPath, cancellationToken))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var relative = Path.GetRelativePath(repoPath, full).Replace('\\', '/');
+            if (isCodeFile is not null && !isCodeFile(relative))
+            {
+                continue;
+            }
+
+            if (new FileInfo(full).Length > MaxFileBytes)
+            {
+                continue;
+            }
+
+            if (IsSensitive(relative))
+            {
+                skipped.Add(relative);
+                continue;
+            }
+
+            var content = File.ReadAllText(full);
+            if (content.Contains('\0'))
+            {
+                continue; // 二进制文件跳过
+            }
+
+            if (SecretContentPattern.IsMatch(content))
+            {
+                skipped.Add(relative);
+                continue; // 内容疑似含密钥：宁可漏审也不外发
+            }
+
+            if (content.Length > MaxFileChars)
+            {
+                content = content[..MaxFileChars] + "\n…（文件过长已截断）";
+            }
+
+            sb.AppendLine($"--- 文件 {relative}（完整内容）---");
+            sb.AppendLine(content);
+            files++;
+        }
+
+        if (skipped.Count > 0)
+        {
+            sb.AppendLine($"--- 以下 {skipped.Count} 个文件疑似含密钥/凭据，已跳过送审（内容不出本机）：{string.Join(", ", skipped)} ---");
+        }
+
+        if (files == 0)
+        {
+            throw new InvalidOperationException(skipped.Count > 0
+                ? $"本次改动的 {skipped.Count} 个文件均疑似含密钥/凭据已跳过送审（{string.Join(", ", skipped)}），无可审查内容。"
+                : "目录里没有可送审的代码文件（模式：all）。确认目录没放错、扩展名在支持列表（如 .cs/.java/.ts/.go/.py）。");
+        }
+
+        return (sb.ToString(), files);
+    }
+
+    /// <summary>all 模式跳过的目录（版本库/构建产物/依赖包，收进送审只会稀释上下文）。</summary>
+    private static readonly HashSet<string> ExcludedDirs = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".git", ".guard", ".vs", ".idea", ".workbuddy", "bin", "obj", "node_modules", "dist",
+    };
+
+    /// <summary>枚举目录树内全部文件（跳过构建/依赖目录，按序稳定输出保证回放可比）。</summary>
+    private static IEnumerable<string> EnumerateSourceFiles(string repoPath, CancellationToken cancellationToken)
+    {
+        var results = new List<string>();
+        var pending = new Stack<string>();
+        pending.Push(repoPath);
+        while (pending.Count > 0)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var dir = pending.Pop();
+
+            foreach (var sub in Directory.EnumerateDirectories(dir))
+            {
+                if (!ExcludedDirs.Contains(Path.GetFileName(sub)))
+                {
+                    pending.Push(sub);
+                }
+            }
+
+            results.AddRange(Directory.EnumerateFiles(dir));
+        }
+
+        results.Sort(StringComparer.Ordinal); // 确定性顺序：同目录两次收集文本一致，回放可逐字比对
+        return results;
     }
 
     /// <summary>
@@ -263,9 +374,36 @@ public static class DiffCollector
         var error = await errTask.ConfigureAwait(false);
         if (process.ExitCode != 0)
         {
-            throw new InvalidOperationException($"git {string.Join(' ', args)} 执行失败：{error.Trim()}");
+            throw new InvalidOperationException(DescribeGitFailure(args, error));
         }
 
         return output;
+    }
+
+    /// <summary>
+    /// 把 git 失败转成人话报错：非 git 目录给方向性指引，其余取 stderr 真因行
+    /// （git 失败常先倾泻几十行 usage 再补 "fatal:" 真因，只看首行会被 usage 误导）。
+    /// </summary>
+    /// <param name="args">git 参数（用于报错回显）。</param>
+    /// <param name="stderr">git 标准错误全文。</param>
+    /// <returns>单行可行动报错。</returns>
+    private static string DescribeGitFailure(string[] args, string stderr)
+    {
+        // 非 git 目录：用户真正需要的是"下一步怎么办"，不是 git 的 usage 说明书
+        if (stderr.Contains("not a git repository", StringComparison.OrdinalIgnoreCase))
+        {
+            return "目标目录不是 git 仓库，无法用 diff 模式圈定改动范围。"
+                + "散文件/案例目录请用 --mode all 全量送审；确要审改动则先 git init 并提交。";
+        }
+
+        var lines = stderr.Trim().Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        // 真因行优先（fatal:/error: 开头），找不到再退回首行
+        var cause = lines.FirstOrDefault(l => l.StartsWith("fatal:", StringComparison.OrdinalIgnoreCase)
+            || l.StartsWith("error:", StringComparison.OrdinalIgnoreCase))
+            ?? lines.FirstOrDefault()
+            ?? "无错误详情";
+
+        return $"git {string.Join(' ', args)} 执行失败：{cause}";
     }
 }

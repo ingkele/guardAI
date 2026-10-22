@@ -52,6 +52,7 @@ guardAI init --repo "D:\你的项目"                  # 装配：扫描 → 生
 guardAI init --repo "D:\你的项目" --ai             # AI 装配增强：大模型产配置建议（需 KEY，见下）
 guardAI check --repo "D:\你的项目" --mode changed  # 日常检查（改完代码跑，修到 0 违规）
 guardAI review --repo "D:\你的项目"               # AI 语义审查：命名/注释/分层/复用（需 KEY）
+guardAI review --repo "D:\散文件目录" --mode all   # 非 git 目录全量送审代码文件（案例/散文件场景）
 guardAI learn --repo "D:\你的项目"                # AI 规则发现员：从审查素材提炼候选规则（需 KEY）
 guardAI ui --repo "D:\你的项目"                   # 本地台账网页：审查记录 / 闭环率
 ```

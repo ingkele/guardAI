@@ -250,7 +250,8 @@ internal static class Program
         ReviewReport report;
         try
         {
-            report = await engine.RunAsync(repo, mode, Get(options, "base"), ReviewPrompt.BuildRuleSummary(root), cts.Token);
+            report = await engine.RunAsync(repo, mode, Get(options, "base"), ReviewPrompt.BuildRuleSummary(root), cts.Token,
+                isCodeFile: mode == "all" ? MemberParserRegistry.Supports : null);
         }
         catch (LlmException ex)
         {

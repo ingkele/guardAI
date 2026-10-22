@@ -26,10 +26,11 @@ public sealed class ReviewEngine
     /// 执行一次语义审查。
     /// </summary>
     /// <param name="repoPath">仓库根目录。</param>
-    /// <param name="mode">收集模式：changed / staged / base。</param>
+    /// <param name="mode">收集模式：changed / staged / base / all。</param>
     /// <param name="baseRef">base 模式下的 git 引用。</param>
     /// <param name="ruleSummary">项目规则摘要（送给模型的上下文），可空。</param>
     /// <param name="cancellationToken">取消令牌。</param>
+    /// <param name="isCodeFile">all 模式的代码文件过滤谓词；null 收全部文本文件。</param>
     /// <returns>审查报告。</returns>
     /// <exception cref="InvalidOperationException">没有可审查的改动。</exception>
     /// <exception cref="LlmException">模型调用失败。</exception>
@@ -39,9 +40,10 @@ public sealed class ReviewEngine
         string mode,
         string? baseRef,
         string? ruleSummary,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        Func<string, bool>? isCodeFile = null)
     {
-        var (diffText, files) = await DiffCollector.CollectAsync(repoPath, mode, baseRef, cancellationToken).ConfigureAwait(false);
+        var (diffText, files) = await DiffCollector.CollectAsync(repoPath, mode, baseRef, cancellationToken, isCodeFile).ConfigureAwait(false);
         var user = ReviewPrompt.BuildUser(ruleSummary, diffText);
         var output = await _client.ChatAsync(ReviewPrompt.BuildSystem(), user, cancellationToken).ConfigureAwait(false);
         var findings = ReviewParser.Parse(output);

@@ -92,6 +92,106 @@ public class DiffCollectorTests
         }
     }
 
+    [Fact]
+    public async Task all模式_按谓词过滤只送代码文件()
+    {
+        var dir = InitPlainDir();
+        try
+        {
+            // README.md 是"答案"（描述 seeded 问题），不得进送审范围，否则回放变抄答案
+            File.WriteAllText(Path.Combine(dir, "Bad.cs"), "public class bad { }");
+            File.WriteAllText(Path.Combine(dir, "README.md"), "本案例的 seeded 问题是命名混乱");
+
+            var (text, files) = await DiffCollector.CollectAsync(dir, "all", isCodeFile: p => p.EndsWith(".cs", StringComparison.OrdinalIgnoreCase));
+
+            Assert.Equal(1, files);
+            Assert.Contains("Bad.cs", text);
+            Assert.DoesNotContain("seeded", text); // 答案文件不外发
+        }
+        finally
+        {
+            DeleteRepo(dir);
+        }
+    }
+
+    [Fact]
+    public async Task all模式_敏感过滤照走()
+    {
+        var dir = InitPlainDir();
+        try
+        {
+            File.WriteAllText(Path.Combine(dir, ".env"), "OPENAI_API_KEY=sk-live-1234567890abcdefghijklmnopqrstuv");
+            File.WriteAllText(Path.Combine(dir, "secret-note.cs"), "// -----BEGIN PRIVATE KEY-----\nMIIEvQIBADAN");
+            File.WriteAllText(Path.Combine(dir, "ok.cs"), "public class Ok { }");
+
+            var (text, files) = await DiffCollector.CollectAsync(dir, "all");
+
+            Assert.Equal(1, files);
+            Assert.Contains("ok.cs", text);
+            Assert.DoesNotContain("sk-live-1234567890", text); // 密钥内容不出本机
+            Assert.DoesNotContain("BEGIN PRIVATE KEY", text);
+            Assert.Contains(".env", text); // 跳过清单只列文件名
+        }
+        finally
+        {
+            DeleteRepo(dir);
+        }
+    }
+
+    [Fact]
+    public async Task all模式_跳过构建与依赖目录()
+    {
+        var dir = InitPlainDir();
+        try
+        {
+            Directory.CreateDirectory(Path.Combine(dir, "bin"));
+            Directory.CreateDirectory(Path.Combine(dir, "node_modules"));
+            File.WriteAllText(Path.Combine(dir, "bin", "Generated.cs"), "public class Generated { }");
+            File.WriteAllText(Path.Combine(dir, "node_modules", "lib.js"), "var x = 1;");
+            File.WriteAllText(Path.Combine(dir, "src.cs"), "public class Src { }");
+
+            var (text, files) = await DiffCollector.CollectAsync(dir, "all");
+
+            Assert.Equal(1, files);
+            Assert.Contains("src.cs", text);
+            Assert.DoesNotContain("Generated.cs", text);
+            Assert.DoesNotContain("lib.js", text);
+        }
+        finally
+        {
+            DeleteRepo(dir);
+        }
+    }
+
+    [Fact]
+    public async Task 非git目录_changed模式_人话报错指路all()
+    {
+        var dir = InitPlainDir();
+        try
+        {
+            File.WriteAllText(Path.Combine(dir, "a.cs"), "public class A { }");
+
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => DiffCollector.CollectAsync(dir, "changed"));
+
+            Assert.Contains("--mode all", ex.Message); // 指对方向
+            Assert.DoesNotContain("usage: git", ex.Message); // 不倾泻 git usage
+            Assert.DoesNotContain("diff [<options>]", ex.Message);
+        }
+        finally
+        {
+            DeleteRepo(dir);
+        }
+    }
+
+    /// <summary>建一个非 git 的临时目录（散文件/案例目录场景）。</summary>
+    private static string InitPlainDir()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "guardai-dc-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dir);
+        return dir;
+    }
+
     /// <summary>建一个只有一次提交的临时 git 仓库（工作区回到干净态）。</summary>
     private static string InitRepo()
     {
