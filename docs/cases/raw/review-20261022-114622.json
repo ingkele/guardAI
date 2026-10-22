@@ -1,0 +1,50 @@
+{
+  "generatedAt": "2026-10-22T11:46:22.2144687+08:00",
+  "provider": "openai",
+  "model": "mimo-v2.6-pro",
+  "diffFiles": 25,
+  "diffChars": 69730,
+  "note": "送审内容超过长度上限已截断，建议分批提交后审查",
+  "findings": [
+    {
+      "severity": "warn",
+      "category": "其他",
+      "file": "src/GuardAI.AI/Review/DiffCollector.cs",
+      "line": 179,
+      "message": "RunGit 用 WaitForExit() + ReadToEndAsync().GetAwaiter().GetResult() 同步阻塞执行，且完全不接受 CancellationToken；而 ReviewEngine.RunAsync 把 cancellationToken 直接透传给模型调用、却对 Collect 阶段无能为力。结果是 Program.RunReview 中\"Ctrl+C 可中断\"的承诺只覆盖模型调用，git 收集（大仓库 diff 可能很慢）阶段按 Ctrl+C 无反应，只能硬等。",
+      "suggestion": "给 Collect/RunGit 增加 CancellationToken 参数并改为异步：`await process.StandardOutput.ReadToEndAsync(ct)` / `ReadToEndAsync` 双流并发后 `await process.WaitForExitAsync(ct)`；取消时 `process.Kill(entireProcessTree: true)`，把 CancelKeyPress 的取消真正贯通到 git 收集阶段。"
+    },
+    {
+      "severity": "warn",
+      "category": "其他",
+      "file": "src/GuardAI.AI/Config/AIConfig.cs",
+      "line": 93,
+      "message": "密钥策略两处不一致：AIConfigParser.Parse 对 openai 强制要求 api_key_env（缺省即抛 FormatException），但 OpenAICompatClient.ChatAsync 里明确写了 `if (!string.IsNullOrEmpty(key))` 才带 Authorization 头，说明设计上支持无密钥调用（本地 vLLM / 内网无鉴权网关）。按当前解析规则这条分支永远走不到，本地无鉴权端点也无法配置。",
+      "suggestion": "二选一并统一策略：(1) 放宽解析——openai 也允许省略 api_key_env（仅限本地/内网端点），并在 guardai.yml 示例注释里写明；(2) 收紧客户端——key 为空直接抛 LlmException，删除空密钥分支，保持\"必须提供密钥来源\"的单一契约。"
+    },
+    {
+      "severity": "info",
+      "category": "性能",
+      "file": "src/GuardAI.AI/Review/DiffCollector.cs",
+      "line": 151,
+      "message": "SplitDiffSegments 对每个 diff 段调用两次 current.ToString().Trim()（第 151/153 与 162/164 行同理）：ToString() 会复制整个段文本，Trim() 再复制一次，逐文件循环里对 60k 级 diff 做无谓的全量分配。",
+      "suggestion": "只物化一次：`var text = current.ToString(); if (text.Trim().Length > 0) yield return text;`，或在 append 时维护 hasNonWhitespace 标志，避免重复 ToString/Trim。"
+    },
+    {
+      "severity": "info",
+      "category": "复用",
+      "file": "src/GuardAI.AI/Review/DiffCollector.cs",
+      "line": 172,
+      "message": "ExtractDiffPath 每个 diff 段都走静态方法 Regex.Match(firstLine, \"^diff --git a/\\S+ b/(\\S+)$\")，既未提为静态字段也未加 RegexOptions.Compiled，与同类中 SensitiveNamePattern / SensitiveDirPattern / SecretContentPattern 的\"静态 readonly + Compiled\"写法不一致，重复走正则解析开销。",
+      "suggestion": "在同一类中提为 `private static readonly Regex DiffPathPattern = new(@\"^diff --git a/\\S+ b/(/S+)$\", RegexOptions.Compiled);`（路径含空格时可改用 `^diff --git a/.+ b/(.+)$` 的非贪婪写法），ExtractDiffPath 改用该字段，与既有正则声明方式统一。"
+    },
+    {
+      "severity": "info",
+      "category": "其他",
+      "file": "src/GuardAI.AI/Review/DiffCollector.cs",
+      "line": 67,
+      "message": "`new FileInfo(full).Length > MaxFileChars * 2` 用字节数（FileInfo.Length）对比字符数阈值（MaxFileChars=20000），乘 2 的换算关系没有任何说明；而真正截断用的是 content.Length（UTF-16 字符数），两套口径混用，读者无法判断\"到底多大的文件会被跳过\"。",
+      "suggestion": "拆出独立常量并写清口径：`private const long MaxFileBytes = 1_000_000; // 预筛上限（字节），避免整文件读入内存`，预筛用 MaxFileBytes，截断仍用 MaxFileChars，并在注释中说明两者是\"字节预筛 / 字符截断\"两个不同阶段。"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "generatedAt": "2026-10-22T12:01:26.7548265+08:00",
+  "provider": "openai",
+  "model": "mimo-v2.6-pro",
+  "diffFiles": 27,
+  "diffChars": 72507,
+  "note": "送审内容超过长度上限已截断，建议分批提交后审查",
+  "findings": [
+    {
+      "severity": "warn",
+      "category": "其他",
+      "file": "src/GuardAI.AI/Review/DiffCollector.cs",
+      "line": 78,
+      "message": "收集模式的合法性校验在 Program.RunReview 与 DiffCollector.CollectAsync 中重复出现，且抛出的异常类型不一致（Program 抛 FormatException，DiffCollector 抛 ArgumentException）。同一输入错误在不同入口表现为不同异常契约，测试与调用方易踩坑。",
+      "suggestion": "统一契约：要么 DiffCollector.CollectAsync 不再重复校验（信任调用方已校验），要么两处都抛 FormatException 并共享同一个模式常量集合；推荐在 DiffCollector 内定义 public static readonly string[] SupportedModes，Program 侧引用之并复用同一抛错方法。"
+    },
+    {
+      "severity": "info",
+      "category": "注释",
+      "file": "src/GuardAI.AI/Config/AIConfig.cs",
+      "line": 9,
+      "message": "BaseUrl 参数的 XML 注释写\"为空时按协议取官方默认地址\"，但 record 的 BaseUrl 是非空 string 且位置参数必填，\"为空取默认\"的行为实际发生在 AIConfigParser.NormalizeBaseUrl。注释描述的是解析侧行为而非 record 契约，可能误导直接 new AIConfig 的调用方。",
+      "suggestion": "把该描述下沉到 AIConfigParser.Parse/NormalizeBaseUrl 的文档中；record 参数注释改为\"已归一的接口基地址（不含尾斜杠）\"，并可补一句\"由 AIConfigParser 保证非空\"。"
+    },
+    {
+      "severity": "info",
+      "category": "命名",
+      "file": "src/GuardAI.AI/Llm/LlmJson.cs",
+      "line": 8,
+      "message": "LlmJson 类内同时提供 JSON 序列化选项与纯文本截断方法 Truncate，后者与类名所指\"JSON\"无关，读者按名字检索工具时容易漏掉。",
+      "suggestion": "拆分职责：把 Truncate 移到独立的 LlmText（或 LlmStringUtil）静态类；或至少把类重命名为 LlmIo / LlmShared，让命名覆盖两类职责。"
+    },
+    {
+      "severity": "info",
+      "category": "复用",
+      "file": "src/GuardAI.AI/Llm/AnthropicClient.cs",
+      "line": 42,
+      "message": "AnthropicClient / OpenAICompatClient / OllamaClient 中 \"构造 HttpRequestMessage + StringContent 序列化 + SendAsync + 读 body + 非成功抛 LlmException\" 的样板代码重复三次，仅请求体与解析逻辑不同。",
+      "suggestion": "提取一个 internal static 的 LlmHttp.SendAsync(HttpClient, HttpRequestMessage, string label, CancellationToken)，统一封装状态码检查与 LlmJson.Truncate 报错拼装；三个客户端只负责构造请求与解析响应体。"
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "generatedAt": "2026-10-22T10:29:49.8652614\u002B08:00",
+  "provider": "openai",
+  "model": "mimo-v2.6-pro",
+  "diffFiles": 23,
+  "diffChars": 63356,
+  "note": "\u9001\u5BA1\u5185\u5BB9\u8D85\u8FC7\u957F\u5EA6\u4E0A\u9650\u5DF2\u622A\u65AD\uFF0C\u5EFA\u8BAE\u5206\u6279\u63D0\u4EA4\u540E\u5BA1\u67E5",
+  "findings": [
+    {
+      "severity": "warn",
+      "category": "\u547D\u540D",
+      "file": "src/GuardAI.Cli/Program.cs",
+      "line": 260,
+      "message": "\u5C40\u90E8\u53D8\u91CF \u0060Rank\u0060 \u4F7F\u7528\u4E86 PascalCase\uFF0C\u8FDD\u80CC C# \u5C40\u90E8\u53D8\u91CF/\u59D4\u6258\u53D8\u91CF\u7684 camelCase \u547D\u540D\u7EA6\u5B9A\uFF1B\u4E14\u5B83\u4E0E ReviewReport \u5185\u90E8\u7684\u7EA7\u522B\u6392\u5E8F\u903B\u8F91\u662F\u540C\u4E00\u5957\u8BED\u4E49\u3002",
+      "suggestion": "\u6539\u540D\u4E3A \u0060rank\u0060\uFF08\u6216\u6539\u4E3A\u5177\u540D\u9759\u6001\u5C40\u90E8\u51FD\u6570 \u0060static int Rank(string severity)\u0060\uFF09\uFF0C\u5E76\u8003\u8651\u628A\u8BE5\u7EA7\u522B\u6620\u5C04\u6536\u655B\u5230 ReviewFinding/ReviewReport \u4E0A\u7684\u516C\u5F00\u65B9\u6CD5\uFF08\u5982 \u0060ReviewFinding.SeverityRank(string)\u0060\uFF09\uFF0C\u907F\u514D\u4E24\u5904\u5404\u5199\u4E00\u5957 switch\u3002"
+    },
+    {
+      "severity": "warn",
+      "category": "\u5176\u4ED6",
+      "file": "src/GuardAI.AI/Review/ReviewPrompt.cs",
+      "line": 87,
+      "message": "BuildRuleSummary \u63D0\u70BC\u7684\u952E\u662F \u0060placement\u0060\uFF0C\u4F46 guardai.yml \u4E2D\u5B9E\u9645\u7684\u9876\u7EA7\u6BB5\u540D\u662F \u0060placement_rules\u0060\uFF0C\u5BFC\u81F4\u9879\u76EE\u7684\u653E\u7F6E/\u5206\u5C42\u89C4\u5219\u6C38\u8FDC\u4E0D\u4F1A\u9001\u7ED9\u6A21\u578B\uFF0C\u5BA1\u67E5\u4E0A\u4E0B\u6587\u7F3A\u5931\u5173\u952E\u7EA6\u5B9A\u3002",
+      "suggestion": "\u628A\u952E\u5217\u8868\u6539\u4E3A\u5B9E\u9645\u914D\u7F6E\u6BB5\u540D\uFF1A\u0060new[] { \u0022project_type\u0022, \u0022allowed_dirs\u0022, \u0022exclusions\u0022, \u0022placement_rules\u0022 }\u0060\uFF08\u6216\u76F4\u63A5\u904D\u5386 root \u7684\u5168\u90E8\u9876\u7EA7\u952E\u505A\u6458\u8981\uFF09\uFF0C\u5E76\u8865\u4E00\u6761\u6D4B\u8BD5\u65AD\u8A00 placement_rules \u80FD\u51FA\u73B0\u5728\u6458\u8981\u91CC\u3002"
+    },
+    {
+      "severity": "warn",
+      "category": "\u5176\u4ED6",
+      "file": "src/GuardAI.AI/Review/ReviewPrompt.cs",
+      "line": 103,
+      "message": "FormatValue \u5BF9\u5217\u8868\u53EA\u8C03\u7528\u5143\u7D20\u7684 ToString()\uFF0C\u9047\u5230 \u0060allowed_dirs\u0060 \u8FD9\u7C7B\u201C\u5B57\u5178\u5217\u8868\u201D\u4F1A\u6E32\u67D3\u6210 \u0060System.Collections.Generic.Dictionary\u00602[System.String,System.Object]\u0060 \u4E4B\u7C7B\u7684\u7C7B\u578B\u540D\uFF08\u672C\u6B21\u9001\u5BA1\u4E0A\u4E0B\u6587\u91CC\u5DF2\u771F\u5B9E\u51FA\u73B0 17 \u884C\uFF09\uFF0C\u5BF9\u6A21\u578B\u662F\u65E0\u6548\u566A\u97F3\uFF1Bmap \u5206\u652F\u53EA\u62FC Key \u4E5F\u4F1A\u4E22\u5931 value\u3002",
+      "suggestion": "\u9012\u5F52\u683C\u5F0F\u5316\uFF1A\u5217\u8868\u5143\u7D20\u4E0E\u5B57\u5178\u503C\u90FD\u9012\u5F52\u8C03\u7528 FormatValue\uFF08\u5B57\u5178\u8F93\u51FA \u0060key=value\u0060\uFF09\uFF0C\u5982 \u0060IReadOnlyList\u003Cobject?\u003E list =\u003E string.Join(\u0022, \u0022, list.Select(FormatValue))\u0060\u3001\u0060IReadOnlyDictionary\u003Cstring, object?\u003E map =\u003E string.Join(\u0022, \u0022, map.Select(kv =\u003E $\u0022{kv.Key}={FormatValue(kv.Value!)}\u0022))\u0060\u3002"
+    },
+    {
+      "severity": "warn",
+      "category": "\u6027\u80FD",
+      "file": "src/GuardAI.AI/Review/DiffCollector.cs",
+      "line": 96,
+      "message": "RunGit \u5148\u540C\u6B65 ReadToEnd \u8BFB stdout\u3001\u518D\u8BFB stderr\uFF0C\u82E5 git \u5411 stderr \u5199\u6EE1\u7BA1\u9053\u7F13\u51B2\u533A\u4F1A\u9020\u6210\u7236\u5B50\u8FDB\u7A0B\u4E92\u7B49\u800C\u6B7B\u9501\uFF08\u5927\u4ED3\u5E93 diff/\u62A5\u9519\u573A\u666F\u4E0B stderr \u975E\u7A7A\u662F\u5E38\u6001\uFF09\u3002",
+      "suggestion": "\u6539\u4E3A\u5E76\u53D1\u8BFB\u53D6\uFF1A\u0060var outTask = process.StandardOutput.ReadToEndAsync(); var errTask = process.StandardError.ReadToEndAsync(); process.WaitForExit(); var output = await outTask; var error = await errTask;\u0060\uFF08RunGit \u76F8\u5E94\u6539\u4E3A async \u5E76\u5411\u4E0A\u4F20\u9012\uFF09\uFF0C\u6216\u7528 \u0060process.ErrorDataReceived\u0060 \u4E8B\u4EF6\u5F02\u6B65\u6D88\u8D39 stderr\u3002"
+    },
+    {
+      "severity": "info",
+      "category": "\u590D\u7528",
+      "file": "src/GuardAI.AI/Llm/OpenAiCompatClient.cs",
+      "line": 23,
+      "message": "\u0060JsonOptions\u0060 \u4EE5 internal \u9759\u6001\u5B57\u6BB5\u6302\u5728 OpenAiCompatClient \u4E0A\u5374\u88AB AnthropicClient/OllamaClient \u8DE8\u5B9E\u73B0\u5F15\u7528\uFF0C\u0060Truncate\u0060 \u4E5F\u5728\u4E09\u4E2A\u534F\u8BAE\u5BA2\u6237\u7AEF\u91CC\u5404\u590D\u5236\u4E00\u4EFD\uFF0C\u804C\u8D23\u5F52\u5C5E\u4E0D\u6E05\u3001\u540E\u7EED\u6613\u6F02\u79FB\u3002",
+      "suggestion": "\u62BD\u51FA\u5171\u4EAB\u7684\u5185\u90E8\u8F85\u52A9\u7C7B\uFF08\u5982 \u0060internal static class LlmJson { public static readonly JsonSerializerOptions Options = ...; public static string Truncate(string body) ... }\u0060\uFF09\uFF0C\u4E09\u4E2A\u5BA2\u6237\u7AEF\u7EDF\u4E00\u5F15\u7528\uFF0C\u5220\u9664\u5404\u81EA\u7684 Truncate \u4E0E\u5BF9 OpenAiCompatClient.JsonOptions \u7684\u53CD\u5411\u4F9D\u8D56\u3002"
+    }
+  ]
+}

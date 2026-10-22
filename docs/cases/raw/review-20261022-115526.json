@@ -1,0 +1,34 @@
+{
+  "generatedAt": "2026-10-22T11:55:26.7751829+08:00",
+  "provider": "openai",
+  "model": "mimo-v2.6-pro",
+  "diffFiles": 25,
+  "diffChars": 71955,
+  "note": "送审内容超过长度上限已截断，建议分批提交后审查",
+  "findings": [
+    {
+      "severity": "info",
+      "category": "其他",
+      "file": "src/GuardAI.AI/Config/AIConfig.cs",
+      "line": 61,
+      "message": "同一文件包含 AIDefaults、AIConfig、AIConfigParser 三个公共类型，.NET 惯例是一个文件一个公共类型，当前布局会让按类型名定位文件变得困难（如找 AIConfigParser 却要打开 AIConfig.cs）。",
+      "suggestion": "拆成三个文件：src/GuardAI.AI/Config/AIDefaults.cs、src/GuardAI.AI/Config/AIConfig.cs、src/GuardAI.AI/Config/AIConfigParser.cs，命名空间保持 GuardAI.AI.Config 不变。"
+    },
+    {
+      "severity": "warn",
+      "category": "其他",
+      "file": "src/GuardAI.AI/Config/AIConfig.cs",
+      "line": 72,
+      "message": "当 guardai.yml 中存在 ai: 段但值不是映射（如缩进写错变成字符串或列表）时，`raw is not IReadOnlyDictionary<...>` 分支直接返回 null，调用方会报“guardai.yml 缺少 ai: 配置段”，与真实原因（ai: 段格式错误）不符，误导用户排查方向。",
+      "suggestion": "区分两种情况：TryGetValue 失败或 raw 为 null 才返回 null；raw 非 null 但不是映射时抛 FormatException，例如 `throw new FormatException($\"{configFileName}: ai: 段必须是键值映射（检查缩进与字段格式）。\");`"
+    },
+    {
+      "severity": "info",
+      "category": "其他",
+      "file": "src/GuardAI.AI/Review/DiffCollector.cs",
+      "line": 59,
+      "message": "CollectAsync 的 mode 采用 `_ =>` 兜底，未知模式（如传入 \"Changed\"、\"all\"、拼写错误）会静默按 changed 模式收集，作为 public API 该行为不易被发现；当前仅 CLI 层做了模式校验，ReviewEngine.RunAsync 等其它调用方绕过校验就会踩坑。",
+      "suggestion": "在 switch 前显式校验模式，未知值抛参数异常：`if (mode is not (\"changed\" or \"staged\" or \"base\")) throw new ArgumentException($\"未知收集模式: {mode}（可用：changed / staged / base）\", nameof(mode));`，并把 `_ =>` 分支改为 `\"changed\" =>`。"
+    }
+  ]
+}

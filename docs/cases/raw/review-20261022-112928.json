@@ -1,0 +1,34 @@
+{
+  "generatedAt": "2026-10-22T11:29:28.4534512+08:00",
+  "provider": "openai",
+  "model": "mimo-v2.6-pro",
+  "diffFiles": 25,
+  "diffChars": 65752,
+  "note": "送审内容超过长度上限已截断，建议分批提交后审查",
+  "findings": [
+    {
+      "severity": "warn",
+      "category": "安全",
+      "file": "src/GuardAI.AI/Review/DiffCollector.cs",
+      "line": 43,
+      "message": "未跟踪文件的完整内容会被直接送入外部大模型接口，但未过滤可能含敏感信息的文件（如 .env、*.pem、*.key、credentials 等）。这些文件通常是新增且未被 gitignore 忽略的，恰好会被 `ls-files --others --exclude-standard` 收集并外发，存在密钥泄露到第三方模型服务（guardai.yml 中的 base_url）的风险。",
+      "suggestion": "在遍历未跟踪文件时跳过常见密钥/凭据文件：按文件名模式（.env、.env.*、*.pem、*.key、*.p12、id_rsa*、credentials* 等）与所在目录（如 .aws/、.ssh/）过滤，或对内容做简单的密钥特征检测（如 sk-、BEGIN PRIVATE KEY）后跳过并计数提示；同时在提示词/报告附注中说明未送审的文件。"
+    },
+    {
+      "severity": "warn",
+      "category": "其他",
+      "file": "src/GuardAI.Cli/Program.cs",
+      "line": 205,
+      "message": "`ReviewEngine.RunAsync` 内部的 `DiffCollector.Collect` 在“没有可审查的改动”这一正常场景下抛出 `InvalidOperationException`，而 `RunReview` 只捕获了 `LlmException` 与取消/超时异常。该异常会向上传播，若外层 catch 的过滤条件未覆盖它，用户会看到原始堆栈而不是“先改代码再跑 review”的友好提示。",
+      "suggestion": "在 `RunReview` 的 try 块外或内层显式 `catch (InvalidOperationException ex) { return Fail(ex.Message); }`（或在调用 `DiffCollector.Collect` 前先判定无改动并返回 ExitOk/ExitError），把“无改动”当作可控分支处理。"
+    },
+    {
+      "severity": "info",
+      "category": "注释",
+      "file": "src/GuardAI.AI/Config/AIConfig.cs",
+      "line": 13,
+      "message": "`AIDefaults.MaxTokens` 的注释写“推理模型思考预算要 16384 起步”，但常量取值是 8192，注释与实现不一致，容易让使用者误以为默认值就是 16384（guardai.yml 示例里也确实配了 16384）。",
+      "suggestion": "把注释改为与取值一致的描述，例如“默认回复最大 token 数 8192；使用推理模型时建议在配置中调大到 16384 起步”，或直接把默认值改为 16384 并同步 `AIConfigParser`/测试中的默认断言。"
+    }
+  ]
+}

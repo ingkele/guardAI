@@ -1,0 +1,42 @@
+{
+  "generatedAt": "2026-10-22T12:12:22.0530030+08:00",
+  "provider": "openai",
+  "model": "mimo-v2.6-pro",
+  "diffFiles": 29,
+  "diffChars": 73716,
+  "note": "送审内容超过长度上限已截断，建议分批提交后审查",
+  "findings": [
+    {
+      "severity": "warn",
+      "category": "注释",
+      "file": "src/GuardAI.AI/Review/ReviewParser.cs",
+      "line": 19,
+      "message": "Parse 的 XML 注释声明抛出 FormatException，但 JsonDocument.Parse(json) 对非法 JSON 抛的是 JsonException（并非 FormatException 的子类），契约与实现不一致；调用方（Program.RunReview）按 FormatException/可控异常处理的分支接不住模型输出畸形的场景。",
+      "suggestion": "把解析包一层 try/catch(JsonException ex) 并重抛 new FormatException($\"模型输出的 JSON 格式非法：{Preview(llmOutput)}\", ex)，保证 Parse 只抛注释中声明的 FormatException；或同步修正注释并在 Program.RunReview 中把 JsonException 加入可控异常分支。"
+    },
+    {
+      "severity": "warn",
+      "category": "注释",
+      "file": "src/GuardAI.AI/Llm/OpenAICompatClient.cs",
+      "line": 53,
+      "message": "ILlmClient.ChatAsync 的注释承诺“响应格式错误”统一抛 LlmException，但此处 JsonDocument.Parse(body) 在服务端返回非 JSON（如网关 HTML 错误页）时抛 JsonException，会绕过 LlmException 契约直冲上层通用 catch，打印原始堆栈而非可行动提示。",
+      "suggestion": "在 LlmHttp 增加如 ParseJson(string body, string label) 的共用封装（内部 try/catch JsonException 并转 LlmException，顺带统一各客户端重复的 JsonDocument.Parse 逻辑），三个协议客户端改为调用该封装。"
+    },
+    {
+      "severity": "warn",
+      "category": "其他",
+      "file": "src/GuardAI.AI/Config/AIConfigParser.cs",
+      "line": 115,
+      "message": "GetDouble 的范围校验 `value < 0 || value > 2` 拦不住 NaN/Infinity：double.TryParse 在 InvariantCulture 下可解析 \"NaN\"/\"Infinity\"，而 NaN 与任何值比较均为 false，非法 temperature 会一路透传到请求体。",
+      "suggestion": "在范围判断前增加 `if (!double.IsFinite(value))` 并抛 FormatException，或改用 decimal 解析 temperature。"
+    },
+    {
+      "severity": "info",
+      "category": "其他",
+      "file": "src/GuardAI.AI/Review/DiffCollector.cs",
+      "line": 44,
+      "message": "SupportedModes 是 public static readonly 的可变数组，外部（含 CLI）可直接改写元素，破坏“单一事实来源”的校验前提。",
+      "suggestion": "改为 `public static IReadOnlyList<string> SupportedModes { get; } = [\"changed\", \"staged\", \"base\"];`，并把外部的 Array.IndexOf 改为对只读列表的 IndexOf/Contains。"
+    }
+  ]
+}

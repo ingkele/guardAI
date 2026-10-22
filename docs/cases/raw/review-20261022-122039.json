@@ -1,0 +1,34 @@
+{
+  "generatedAt": "2026-10-22T12:20:39.8509726+08:00",
+  "provider": "openai",
+  "model": "mimo-v2.6-pro",
+  "diffFiles": 29,
+  "diffChars": 75703,
+  "note": "送审内容超过长度上限已截断，建议分批提交后审查",
+  "findings": [
+    {
+      "severity": "info",
+      "category": "注释",
+      "file": "src/GuardAI.AI/Llm/LlmJson.cs",
+      "line": 7,
+      "message": "类的 XML 注释写的是“JSON/文本共用工具：序列化选项与报错截断”，但该类只提供 JSON 序列化选项，报错截断实际在 LlmText.Truncate 中；注释与实现不一致（且与 LlmText 的注释“与 JSON 选项分开，各司其职”互相矛盾）。",
+      "suggestion": "把 LlmJson 的类注释改为“AI 层 JSON 序列化选项共用（报文、报告、解析报错统一引用，避免各处重复实现）”，删除“文本/报错截断”字样，使注释与实现一致。"
+    },
+    {
+      "severity": "warn",
+      "category": "其他",
+      "file": "src/GuardAI.AI/Review/DiffCollector.cs",
+      "line": 134,
+      "message": "当本次改动全部命中敏感文件/密钥特征被跳过时（files==0 但 skipped.Count>0），仍抛出“没有可审查的改动……先改代码再跑 review”，提示与事实不符；且已收集的“跳过清单”随异常一起丢弃，用户无从知道改动其实存在只是未送审。",
+      "suggestion": "在抛出前区分两种情形：若 skipped.Count > 0，抛出如 $\"本次改动的 {skipped.Count} 个文件均疑似含密钥/凭据已跳过送审（{string.Join(\", \", skipped)}），无可审查内容\" 的消息；仅当 skipped 为空时才提示“没有可审查的改动”。"
+    },
+    {
+      "severity": "info",
+      "category": "其他",
+      "file": "src/GuardAI.Cli/Program.cs",
+      "line": 200,
+      "message": "Console.CancelKeyPress 处理器注册后从未注销，且其闭包引用的 cts 是 using 变量：RunReview 返回时 cts 已 Dispose，若此后（进程收尾或同进程再次调用）触发 Ctrl+C，处理器内的 cts.Cancel() 会抛 ObjectDisposedException 并可能导致进程崩溃。",
+      "suggestion": "把处理器提取为局部变量（如 ConsoleCancelEventHandler handler = (_, e) => { e.Cancel = true; cts.Cancel(); };），注册后在 finally 中执行 Console.CancelKeyPress -= handler; 再让 cts 释放。"
+    }
+  ]
+}
