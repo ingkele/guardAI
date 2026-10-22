@@ -18,8 +18,12 @@ public static class GuardAiCommand
     /// <returns>调用命令（绝对路径优先并带引号；解析不出时回落 PATH 名 guardAI）。</returns>
     public static string Resolve()
     {
-        // 单文件自包含发布：入口程序集 Location 为空，进程路径即 GuardAI.Cli.exe
+        // 单文件自包含发布：入口程序集 Location 为空，进程路径即 GuardAI.Cli.exe。
+        // IL3000 豁免说明：此处正是依赖"单文件下 Location 返回空串"这一行为做分支回退，
+        // 非误用——空串时走 Environment.ProcessPath，逻辑正确且有单测覆盖（GuardAiCommandTests）。
+#pragma warning disable IL3000
         var entry = Assembly.GetEntryAssembly()?.Location;
+#pragma warning restore IL3000
         if (string.IsNullOrEmpty(entry))
         {
             var process = Environment.ProcessPath;
