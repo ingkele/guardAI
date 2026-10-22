@@ -1,4 +1,5 @@
-﻿using GuardAI.AI;
+﻿using System.Text.Json;
+using GuardAI.AI;
 using GuardAI.AI.Config;
 using GuardAI.AI.Llm;
 using GuardAI.AI.Review;
@@ -47,12 +48,13 @@ internal static class Program
                 "check" => RunCheck(options),
                 "review" => await RunReview(options),
                 "init" => await RunInit(options),
+                "learn" => await RunLearn(options),
                 "doctor" => RunDoctor(options),
                 "ui" => RunUi(options),
                 "mcp" => RunMcp(options),
                 "index" => RunIndex(options),
                 "search" => RunSearch(options),
-                _ => Fail($"未知命令: {command}（可用：check / review / init / doctor / ui / mcp / index / search）"),
+                _ => Fail($"未知命令: {command}（可用：check / review / init / learn / doctor / ui / mcp / index / search）"),
             };
         }
         catch (Exception ex) when (ex is FormatException or FileNotFoundException
@@ -430,10 +432,11 @@ internal static class Program
             }
             else
             {
-                var aiConfig = ResolveInitAiConfig(options, repo);
+                var aiConfig = ResolveAiConfig(options, repo);
                 prescan = ProjectScanner.Scan(repo);
                 Console.WriteLine("正在请求 AI 装配建议（大模型分析仓库结构，只发结构摘要不发代码内容）...");
-                var advised = await AdviseWithCancelAsync(aiConfig, InitDigest.Build(prescan));
+                var advised = await CallAiWithCancelAsync(aiConfig, "AI 装配建议",
+                    (client, ct) => InitAiAdvisor.AdviseAsync(client, InitDigest.Build(prescan), ct));
                 if (advised is null)
                 {
                     return ExitError;
@@ -485,12 +488,125 @@ internal static class Program
     }
 
     /// <summary>
-    /// 带 Ctrl+C 取消贯通的 AI 装配建议调用（与 review 同一套取消/超时语义）。
+    /// 执行规则发现命令：审计 review 记录 / 违规台账 / 豁免清单，AI 提炼候选规则供人工确认。
     /// </summary>
+    /// <remarks>
+    /// "规则 = AI 判断的缓存"：从"踩坑加规则"变成"AI 报案加规则"。
+    /// 只产候选建议不落地——人工确认后才进规则资产，之后由确定性引擎免费执法。
+    /// </remarks>
+    /// <param name="options">命令选项（repo/json/report/ai-*）。</param>
+    /// <returns>退出码（0 完成 / 2 配置或环境错误）。</returns>
+    private static async Task<int> RunLearn(Dictionary<string, string?> options)
+    {
+        var repo = Path.GetFullPath(Get(options, "repo") ?? ".");
+        if (!Directory.Exists(repo))
+        {
+            return Fail($"目标目录不存在: {repo}");
+        }
+
+        // 1. 素材收集（全部本地读取，记录不出本机）
+        var reviewsDir = Path.Combine(repo, Ledger.RecordsDir, "reviews");
+        var reviewTexts = Directory.Exists(reviewsDir)
+            ? Directory.GetFiles(reviewsDir, "review-*.json").OrderBy(f => f, StringComparer.Ordinal)
+                .Select(File.ReadAllText).ToList()
+            : [];
+        var ledgerPath = Ledger.RecordsPath(repo);
+        var ledgerLines = File.Exists(ledgerPath) ? File.ReadAllLines(ledgerPath) : [];
+
+        if (reviewTexts.Count == 0 && ledgerLines.Length == 0)
+        {
+            return Fail("没有可审计的素材（review 报告与违规台账均为空）——先跑 review / check 留下记录再 learn。");
+        }
+
+        var configPath = FindConfig(repo);
+        var config = StructureRuleConfigLoader.Load(configPath);
+        var exclusions = config.Exclusions.Select(e => (e.Path, e.Reason)).ToList();
+        var existingNames = config.PlacementRules.Select(r => r.Name)
+            .Concat(config.Exclusions.Select(e => e.Path))
+            .Concat(config.BannedDirs)
+            .ToList();
+
+        var digest = LearnDigest.Build(reviewTexts, ledgerLines, exclusions, existingNames);
+
+        // 机器可读模式 stdout 纯 JSON：素材统计提示走 stderr（--json 契约）
+        Console.Error.WriteLine($"素材：review 报告 {reviewTexts.Count} 份 / 台账 {ledgerLines.Length} 行 / 豁免 {exclusions.Count} 条");
+
+        var aiConfig = ResolveAiConfig(options, repo);
+        var advice = await CallAiWithCancelAsync(aiConfig, "规则发现",
+            (client, ct) => LearnAdvisor.AdviseAsync(client, digest, existingNames, ct));
+        if (advice is null)
+        {
+            return ExitError;
+        }
+
+        if (options.ContainsKey("json"))
+        {
+            advice.WriteJson(Console.Out);
+        }
+        else
+        {
+            WriteLearnText(Console.Out, advice);
+        }
+
+        if (Get(options, "report") is { } custom)
+        {
+            var full = Path.GetFullPath(custom);
+            Directory.CreateDirectory(Path.GetDirectoryName(full)!);
+            using (var writer = new StreamWriter(full))
+            {
+                advice.WriteJson(writer);
+            }
+
+            Console.Error.WriteLine($"候选规则建议已写入: {full}");
+        }
+
+        return ExitOk;
+    }
+
+    /// <summary>
+    /// 输出候选规则文本报告（给人看）。
+    /// </summary>
+    /// <param name="writer">输出流。</param>
+    /// <param name="advice">候选规则建议。</param>
+    private static void WriteLearnText(TextWriter writer, LearnAdvice advice)
+    {
+        writer.WriteLine($"候选规则 {advice.Rules.Count} 条（人工确认后才进规则资产）：");
+        if (advice.Rules.Count == 0)
+        {
+            writer.WriteLine("  （素材里没有值得立规则的反复模式——踩坑不重复，不用加规则）");
+        }
+
+        var rank = 0;
+        foreach (var rule in advice.Rules)
+        {
+            rank++;
+            writer.WriteLine();
+            writer.WriteLine($"  {rank}. [{rule.Target}] {rule.Name}");
+            writer.WriteLine($"     规则内容: {rule.Pattern}");
+            writer.WriteLine($"     证据: {rule.Evidence}");
+            writer.WriteLine($"     理由: {rule.Reason}");
+        }
+
+        foreach (var note in advice.DroppedNotes)
+        {
+            writer.WriteLine($"提示: 候选规则（已丢弃）: {note}");
+        }
+
+        writer.WriteLine();
+        writer.WriteLine("确认方式：人工核对后——yml 片段粘进 guardai.yml、prompt 指令粘进 AGENTS.md 等项目指令文件；");
+        writer.WriteLine("checker 类候选需评估开发新检查器。AI 只报案，落地由人和引擎把关。");
+    }
+
+    /// <summary>
+    /// 带 Ctrl+C 取消贯通的 AI 调用外壳（init --ai / learn 共用，与 review 同一套取消/超时语义）。
+    /// </summary>
+    /// <typeparam name="T">返回类型（record 引用类型）。</typeparam>
     /// <param name="aiConfig">AI 接入配置。</param>
-    /// <param name="digest">仓库结构摘要。</param>
-    /// <returns>装配建议；取消或调用失败返回 null（错误信息已输出）。</returns>
-    private static async Task<InitAdvice?> AdviseWithCancelAsync(AIConfig aiConfig, string digest)
+    /// <param name="label">调用用途（进错误提示）。</param>
+    /// <param name="call">实际调用（接收客户端与取消令牌）。</param>
+    /// <returns>调用结果；取消或调用失败返回 null（错误信息已输出）。</returns>
+    private static async Task<T?> CallAiWithCancelAsync<T>(
+        AIConfig aiConfig, string label, Func<ILlmClient, CancellationToken, Task<T>> call) where T : class
     {
         using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(aiConfig.TimeoutSeconds) };
         var client = LlmClientFactory.Create(http, aiConfig);
@@ -499,7 +615,7 @@ internal static class Program
         Console.CancelKeyPress += onCancel;
         try
         {
-            return await InitAiAdvisor.AdviseAsync(client, digest, cts.Token);
+            return await call(client, cts.Token);
         }
         catch (LlmException ex)
         {
@@ -508,12 +624,12 @@ internal static class Program
         }
         catch (OperationCanceledException) when (cts.IsCancellationRequested)
         {
-            Console.Error.WriteLine("已取消: 用户中断 AI 装配建议调用。");
+            Console.Error.WriteLine($"已取消: 用户中断{label}。");
             return null;
         }
         catch (Exception ex) when (ex is OperationCanceledException or TimeoutException)
         {
-            Fail($"AI 装配建议调用超时（当前 ai.timeout_seconds={aiConfig.TimeoutSeconds}），"
+            Fail($"{label}调用超时（当前 ai.timeout_seconds={aiConfig.TimeoutSeconds}），"
                 + "建议调大 timeout_seconds 后重试。");
             return null;
         }
@@ -525,13 +641,13 @@ internal static class Program
     }
 
     /// <summary>
-    /// 解析 init --ai 的模型接入配置：命令行 --ai-* 选项优先，其次已有 guardai.yml 的 ai: 段。
+    /// 解析 AI 功能（init --ai / learn）的模型接入配置：命令行 --ai-* 选项优先，其次已有 guardai.yml 的 ai: 段。
     /// </summary>
     /// <param name="options">命令选项。</param>
     /// <param name="repo">目标仓库根目录。</param>
     /// <returns>AI 接入配置。</returns>
     /// <exception cref="FormatException">接入信息不足或协议名非法。</exception>
-    private static AIConfig ResolveInitAiConfig(Dictionary<string, string?> options, string repo)
+    private static AIConfig ResolveAiConfig(Dictionary<string, string?> options, string repo)
     {
         var provider = (Get(options, "ai-provider") ?? AIConfig.ProviderOpenAI).Trim().ToLowerInvariant();
         if (provider is not (AIConfig.ProviderOpenAI or AIConfig.ProviderAnthropic or AIConfig.ProviderOllama))
@@ -544,7 +660,7 @@ internal static class Program
         {
             if (Get(options, "ai-model") is not { } model || string.IsNullOrWhiteSpace(model))
             {
-                throw new FormatException("init --ai 使用命令行接入时必须给 --ai-model（如 mimo-v2.6-pro）");
+                throw new FormatException("命令行接入必须给 --ai-model（如 mimo-v2.6-pro）");
             }
 
             var baseUrl = Get(options, "ai-base-url") ?? provider switch
@@ -567,7 +683,7 @@ internal static class Program
         var root = GuardYaml.Parse(File.ReadAllText(configPath));
         return AIConfigParser.Parse(root, Path.GetFileName(configPath))
             ?? throw new FormatException("""
-                init --ai 需要模型接入配置。两种给法：
+                AI 功能需要模型接入配置。两种给法：
                 ① 命令行选项：--ai-provider openai --ai-model <模型名> --ai-base-url <地址> --ai-api-key-env <环境变量名>
                 ② 在 guardai.yml 写 ai: 段（provider / model / api_key_env / base_url）
                 """);
@@ -734,6 +850,9 @@ internal static class Program
               guardAI init  [--repo <路径>] [--templates <目录>] [--yes] [--force]
                             [--ai [--ai-provider openai|anthropic|ollama] [--ai-model <模型>]
                                   [--ai-base-url <地址>] [--ai-api-key-env <环境变量名>]]
+              guardAI learn [--repo <路径>] [--json] [--report <文件>]
+                            [--ai-provider openai|anthropic|ollama] [--ai-model <模型>]
+                            [--ai-base-url <地址>] [--ai-api-key-env <环境变量名>]
               guardAI doctor [--repo <路径>] [--templates <目录>]
               guardAI ui [--repo <路径>] [--port <端口>] [--no-open]
               guardAI mcp [--repo <路径>]
@@ -747,6 +866,8 @@ internal static class Program
               init     装配：扫描项目 → 生成规则配置 → 补齐 CI/pre-commit/AI hook → 首检
                        --ai 用大模型分析仓库结构产配置建议（白名单/落位/豁免，每条带理由）再合并，
                        根治首跑误报；AI 只装配不裁判，判定永远归引擎
+              learn    AI 规则发现员：审计 review 记录/违规台账/豁免清单，提炼候选规则
+                       （反复踩坑模式 → 规则建议，人工确认后进规则资产）——终结踩坑加规则
               doctor   环境与配置自检
               ui       打开本地台账网页：审查记录 / AI hook 结论 / 闭环率（记录不出本机）
               mcp      启动 MCP server（stdio）：给 AI 客户端搬运 scan_project / generate_config / get_report 三工具
