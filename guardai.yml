@@ -72,6 +72,8 @@ allowed_dirs:
     purpose: AI 语义审查员（v0.4.0 新增，人工确认后补进）
   - path: src/GuardAI.AI/Init/*
     purpose: AI 装配顾问（init --ai，人工确认后补进）
+  - path: src/GuardAI.AI/Learn/*
+    purpose: AI 规则发现员（guardai learn，人工确认后补进）
   - path: src/GuardAI.Init/*
     purpose: init 实测既有子目录
   - path: tests/*

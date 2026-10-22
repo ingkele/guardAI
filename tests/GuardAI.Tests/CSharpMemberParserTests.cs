@@ -291,4 +291,25 @@ public class CSharpMemberParserTests
                 Assert.Equal("RunB", m.Name);
             });
     }
+
+    [Fact]
+    public void 元组返回值方法名正确解析()
+    {
+        // 回归锁：返回值是元组时首个 '(' 不是参数表，方法名曾被解析成 "static"
+        var source = """
+            public class Advisor
+            {
+                public static (string System, string User) BuildPrompt(string digest)
+                {
+                    return ("s", "u");
+                }
+            }
+            """;
+
+        var members = CSharpMemberParser.Parse(source, "src/Demo/Advisor.cs");
+
+        var member = Assert.Single(members);
+        Assert.Equal("BuildPrompt", member.Name);
+        Assert.Equal("Advisor", member.TypeName);
+    }
 }

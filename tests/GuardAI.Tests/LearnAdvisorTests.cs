@@ -161,7 +161,8 @@ public class LearnAdvisorTests
         var client = new OpenAICompatClient(http,
             new AIConfig(AIConfig.ProviderOpenAI, "https://api.example.com/v1", "test-model", null));
 
-        var advice = await LearnAdvisor.AdviseAsync(client, "审计摘要内容", ["已有规则"]);
+        var advice = await AdvisorRunner.AdviseAsync(
+            client, LearnAdvisor.BuildPrompt("审计摘要内容"), reply => LearnAdvisor.ParseReply(reply, ["已有规则"]));
 
         Assert.Single(advice.Rules);
         Assert.Contains("审计摘要内容", handler.LastBody);

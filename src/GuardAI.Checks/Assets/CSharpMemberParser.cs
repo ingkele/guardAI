@@ -176,7 +176,16 @@ public static class CSharpMemberParser
         }
 
         var sigText = buffer.ToString();
-        var open = sigText.IndexOf('(');
+
+        // 参数表左括号 = "配对右括号后跟 => / { / ; / where / 结尾"的括号组——
+        // 返回值可能是元组 (string A, string B)，首个 '(' 不一定是参数表
+        // （此前取首个 '('，元组返回方法的方法名被解析成 "static"）
+        var open = FindParamsOpenParen(sigText);
+        if (open < 0)
+        {
+            return end;
+        }
+
         var head = sigText[..open];
 
         // 2) 只保留公共方法；构造函数（方法名 == 类型名）跳过
@@ -515,6 +524,47 @@ public static class CSharpMemberParser
     /// <summary>
     /// 找到与指定左括号配对的右括号下标。
     /// </summary>
+    /// <summary>
+    /// 找参数表左括号：逐组跳过前置括号组（如返回值元组、泛型实参里的元组），
+    /// 取"配对右括号后紧跟 => / { / ; / where / 文本结尾"的那一组。
+    /// </summary>
+    /// <param name="signature">括号已配平的签名文本。</param>
+    /// <returns>参数表左括号下标；找不到返回 -1。</returns>
+    private static int FindParamsOpenParen(string signature)
+    {
+        for (var i = 0; i < signature.Length; i++)
+        {
+            if (signature[i] != '(')
+            {
+                continue;
+            }
+
+            var close = MatchingParen(signature, i);
+            if (close < 0)
+            {
+                return -1;
+            }
+
+            var k = close + 1;
+            while (k < signature.Length && char.IsWhiteSpace(signature[k]))
+            {
+                k++;
+            }
+
+            if (k >= signature.Length
+                || signature[k] is '{' or ';'
+                || (signature[k] == '=' && k + 1 < signature.Length && signature[k + 1] == '>')
+                || (signature[k] == 'w' && signature.AsSpan(k).StartsWith("where", StringComparison.Ordinal)))
+            {
+                return i;
+            }
+
+            i = close; // 非参数表括号组：整组跳过（内部括号不再单看）
+        }
+
+        return -1;
+    }
+
     private static int MatchingParen(string text, int open)
     {
         var balance = 0;
@@ -546,11 +596,29 @@ public static class CSharpMemberParser
     }
 
     /// <summary>
+    /// 追加字符串长度标记："N"（N 为原文内容长度）；空串保持 ""（与既有语义一致，不带长度 token）。
+    /// </summary>
+    /// <param name="sb">清洗输出缓冲。</param>
+    /// <param name="length">被抹除的字面量内容长度。</param>
+    private static void AppendLengthMarker(StringBuilder sb, int length)
+    {
+        if (length <= 0)
+        {
+            sb.Append("\"\"");
+        }
+        else
+        {
+            sb.Append('"').Append(length).Append('"');
+        }
+    }
+
+    /// <summary>
     /// 清洗源码：注释与字符串字面量内容抹成空格（保留换行，行号不漂移）。
     /// </summary>
     /// <remarks>
     /// 覆盖：行注释、块注释、普通字符串（含转义）、逐字字符串 @"..."、原始字符串 """..."""、字符字面量。
     /// 插值字符串的插值段按字符串内容一并抹掉——对抽取签名/方法体只漏不误。
+    /// 字符串内容抹除后以 "N" 长度标记占位（N=原文内容长度），供近似检测区分不同内容的字面量。
     /// </remarks>
     private static string[] Clean(string source)
     {
@@ -592,11 +660,11 @@ public static class CSharpMemberParser
                 continue;
             }
 
-            // 原始字符串 """..."""
+            // 原始字符串 """..."""（内容抹空格，长度留痕供近似检测区分不同文本）
             if (c == '"' && i + 2 < source.Length && source[i + 1] == '"' && source[i + 2] == '"')
             {
-                sb.Append("\"\"");
                 i += 3;
+                var length = 0;
                 while (i < source.Length)
                 {
                     if (source[i] == '"' && i + 2 < source.Length && source[i + 1] == '"' && source[i + 2] == '"')
@@ -607,16 +675,18 @@ public static class CSharpMemberParser
 
                     sb.Append(source[i] == '\n' ? '\n' : ' ');
                     i++;
+                    length++;
                 }
 
+                AppendLengthMarker(sb, length);
                 continue;
             }
 
             // 逐字字符串 @"..."
             if (c == '@' && i + 1 < source.Length && source[i + 1] == '"')
             {
-                sb.Append("\"\"");
                 i += 2;
+                var length = 0;
                 while (i < source.Length)
                 {
                     if (source[i] == '"')
@@ -625,6 +695,7 @@ public static class CSharpMemberParser
                         {
                             sb.Append("  ");
                             i += 2;
+                            length += 2;
                             continue;
                         }
 
@@ -634,30 +705,36 @@ public static class CSharpMemberParser
 
                     sb.Append(source[i] == '\n' ? '\n' : ' ');
                     i++;
+                    length++;
                 }
 
+                AppendLengthMarker(sb, length);
                 continue;
             }
 
             // 普通字符串（含 $"" 插值串，插值段一并抹掉）
             if (c == '"')
             {
-                sb.Append("\"\"");
                 i++;
+                var length = 0;
                 while (i < source.Length && source[i] != '"' && source[i] != '\n')
                 {
                     if (source[i] == '\\' && i + 1 < source.Length)
                     {
                         i++;
+                        length++;
                     }
 
                     i++;
+                    length++;
                 }
 
                 if (i < source.Length && source[i] == '"')
                 {
                     i++;
                 }
+
+                AppendLengthMarker(sb, length);
 
                 continue;
             }

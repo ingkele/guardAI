@@ -143,7 +143,8 @@ public class InitAiAdvisorTests
         var client = new OpenAICompatClient(http,
             new AIConfig(AIConfig.ProviderOpenAI, "https://api.example.com/v1", "test-model", null));
 
-        var advice = await InitAiAdvisor.AdviseAsync(client, "仓库: Demo 摘要内容");
+        var advice = await AdvisorRunner.AdviseAsync(
+            client, InitAiAdvisor.BuildPrompt("仓库: Demo 摘要内容"), InitAiAdvisor.ParseReply);
 
         Assert.Equal("app", advice.ProjectType);
         Assert.Contains("仓库: Demo 摘要内容", handler.LastBody);

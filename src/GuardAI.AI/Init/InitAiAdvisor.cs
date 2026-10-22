@@ -19,9 +19,6 @@ public static class InitAiAdvisor
     /// <summary>路径通配长度上限。</summary>
     private const int MaxPathLength = 200;
 
-    /// <summary>说明文字长度上限（超出截断）。</summary>
-    private const int MaxTextLength = 300;
-
     /// <summary>
     /// 组装送审提示词（系统提示定角色与输出约束，用户提示给仓库摘要与 JSON 格式）。
     /// </summary>
@@ -72,25 +69,6 @@ public static class InitAiAdvisor
     }
 
     /// <summary>
-    /// 调用大模型产出装配建议（输出经 schema 校验后才进配置）。
-    /// </summary>
-    /// <param name="client">大模型客户端。</param>
-    /// <param name="digest">仓库结构摘要。</param>
-    /// <param name="cancellationToken">取消令牌。</param>
-    /// <returns>装配建议（含被丢弃条目的说明）。</returns>
-    /// <exception cref="LlmException">网络、鉴权或响应格式错误。</exception>
-    /// <exception cref="FormatException">模型输出的 JSON 无法解析。</exception>
-    /// <exception cref="OperationCanceledException">调用被取消。</exception>
-    public static async Task<InitAdvice> AdviseAsync(
-        ILlmClient client, string digest, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(client);
-        var (system, user) = BuildPrompt(digest);
-        var reply = await client.ChatAsync(system, user, cancellationToken);
-        return ParseReply(reply);
-    }
-
-    /// <summary>
     /// 解析并校验模型输出的装配建议（schema 不合规的条目丢弃并记录，不整体失败）。
     /// </summary>
     /// <param name="llmOutput">模型回复文本（允许被代码围栏包裹）。</param>
@@ -98,12 +76,7 @@ public static class InitAiAdvisor
     /// <exception cref="FormatException">输出中找不到合法 JSON 对象。</exception>
     public static InitAdvice ParseReply(string llmOutput)
     {
-        var json = ExtractJson(llmOutput);
-        using var doc = LlmHttp.ParseJson(json, "装配建议");
-        if (doc.RootElement.ValueKind != JsonValueKind.Object)
-        {
-            throw new FormatException($"模型输出的装配建议不是 JSON 对象：{LlmText.Truncate(llmOutput, 200)}");
-        }
+        using var doc = LlmReply.ParseObject(llmOutput, "装配建议");
 
         var dropped = new List<string>();
 
@@ -113,22 +86,6 @@ public static class InitAiAdvisor
         var exclusions = ReadItems(doc.RootElement, "exclusions", dropped);
 
         return new InitAdvice(projectType, allowedDirs, placements, exclusions, dropped);
-    }
-
-    /// <summary>
-    /// 从回复中截取 JSON 对象（容忍 ```json 代码围栏与前后杂文）。
-    /// </summary>
-    private static string ExtractJson(string llmOutput)
-    {
-        var text = llmOutput ?? string.Empty;
-        var start = text.IndexOf('{');
-        var end = text.LastIndexOf('}');
-        if (start < 0 || end <= start)
-        {
-            throw new FormatException($"模型输出中找不到 JSON 对象：{LlmText.Truncate(text, 200)}");
-        }
-
-        return text[start..(end + 1)];
     }
 
     /// <summary>
@@ -176,8 +133,8 @@ public static class InitAiAdvisor
             }
 
             var path = SanitizePath(element, propertyName, dropped);
-            var purpose = ReadText(element, propertyName == "exclusions" ? "reason" : "purpose")
-                ?? ReadText(element, "purpose") ?? ReadText(element, "reason");
+            var purpose = LlmReply.ReadText(element, propertyName == "exclusions" ? "reason" : "purpose")
+                ?? LlmReply.ReadText(element, "purpose") ?? LlmReply.ReadText(element, "reason");
             if (path is null || purpose is null)
             {
                 continue;
@@ -220,19 +177,19 @@ public static class InitAiAdvisor
                 continue;
             }
 
-            var name = ReadText(element, "name");
+            var name = LlmReply.ReadText(element, "name");
             var filePattern = SanitizePath(element, "file_pattern", dropped);
             var dirPattern = SanitizePath(element, "dir_pattern", dropped);
-            var suggest = ReadText(element, "suggest");
+            var suggest = LlmReply.ReadText(element, "suggest");
             if (name is null || filePattern is null || dirPattern is null || suggest is null)
             {
                 continue;
             }
 
             // scope 只接受三值，未知回落 all（最宽适配，不误卡）
-            var scope = ReadText(element, "scope")?.ToLowerInvariant() switch
+            var scope = LlmReply.ReadText(element, "scope")?.ToLowerInvariant() switch
             {
-                "app" or "library" or "all" => ReadText(element, "scope")!.ToLowerInvariant(),
+                "app" or "library" or "all" => LlmReply.ReadText(element, "scope")!.ToLowerInvariant(),
                 _ => "all",
             };
 
@@ -275,7 +232,7 @@ public static class InitAiAdvisor
     /// <returns>合法路径；非法返回 null 并记录丢弃原因。</returns>
     private static string? SanitizePath(JsonElement element, string propertyName, List<string> dropped)
     {
-        var path = ReadText(element, "path") ?? ReadText(element, propertyName);
+        var path = LlmReply.ReadText(element, "path") ?? LlmReply.ReadText(element, propertyName);
         if (path is null)
         {
             dropped.Add($"{propertyName} 条目缺少路径字段，已丢弃");
@@ -291,20 +248,6 @@ public static class InitAiAdvisor
         }
 
         return path;
-    }
-
-    /// <summary>
-    /// 读取文本字段（trim + 空值返回 null + 超长截断）。
-    /// </summary>
-    private static string? ReadText(JsonElement element, string propertyName)
-    {
-        if (!element.TryGetProperty(propertyName, out var raw) || raw.ValueKind != JsonValueKind.String)
-        {
-            return null;
-        }
-
-        var text = raw.GetString()?.Trim();
-        return string.IsNullOrEmpty(text) ? null : LlmText.Truncate(text, MaxTextLength);
     }
 
     /// <summary>

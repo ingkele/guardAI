@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-22T13:09:38.5554461+08:00",
+  "generatedAt": "2026-10-22T14:33:45.2046773+08:00",
   "pairs": [
     {
       "key": "5ce026ca78a616a5",
@@ -82,5 +82,5 @@
       "b": "LlmClientTests.openai协议_HTTP错误_抛LlmException带状态码@tests/GuardAI.Tests/LlmClientTests.cs"
     }
   ],
-  "detectorVersion": 2
+  "detectorVersion": 3
 }

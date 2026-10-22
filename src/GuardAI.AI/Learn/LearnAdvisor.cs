@@ -17,9 +17,6 @@ public static class LearnAdvisor
     /// <summary>候选规则条目上限：规则资产要精，宁缺毋滥。</summary>
     private const int MaxRules = 20;
 
-    /// <summary>文本字段长度上限（超出截断）。</summary>
-    private const int MaxTextLength = 300;
-
     /// <summary>
     /// 组装送审提示词（系统提示定角色与输出约束，用户提示给审计摘要与 JSON 格式）。
     /// </summary>
@@ -76,28 +73,6 @@ public static class LearnAdvisor
     }
 
     /// <summary>
-    /// 调用大模型产出候选规则（输出经 schema 校验与现有规则去重）。
-    /// </summary>
-    /// <param name="client">大模型客户端。</param>
-    /// <param name="digest">审计摘要。</param>
-    /// <param name="existingRuleNames">现有规则名（去重参考）。</param>
-    /// <param name="cancellationToken">取消令牌。</param>
-    /// <returns>候选规则建议（含被丢弃条目的说明）。</returns>
-    /// <exception cref="LlmException">网络、鉴权或响应格式错误。</exception>
-    /// <exception cref="FormatException">模型输出的 JSON 无法解析。</exception>
-    /// <exception cref="OperationCanceledException">调用被取消。</exception>
-    public static async Task<LearnAdvice> AdviseAsync(
-        ILlmClient client, string digest, IReadOnlyList<string> existingRuleNames,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(client);
-        ArgumentNullException.ThrowIfNull(existingRuleNames);
-        var (system, user) = BuildPrompt(digest);
-        var reply = await client.ChatAsync(system, user, cancellationToken);
-        return ParseReply(reply, existingRuleNames);
-    }
-
-    /// <summary>
     /// 解析并校验模型输出的候选规则（schema 不合规或与现有规则重复的条目丢弃并记录）。
     /// </summary>
     /// <param name="llmOutput">模型回复文本（允许被代码围栏包裹）。</param>
@@ -107,12 +82,7 @@ public static class LearnAdvisor
     public static LearnAdvice ParseReply(string llmOutput, IReadOnlyList<string> existingRuleNames)
     {
         ArgumentNullException.ThrowIfNull(existingRuleNames);
-        var json = ExtractJson(llmOutput);
-        using var doc = LlmHttp.ParseJson(json, "候选规则");
-        if (doc.RootElement.ValueKind != JsonValueKind.Object)
-        {
-            throw new FormatException($"模型输出的候选规则不是 JSON 对象：{LlmText.Truncate(llmOutput, 200)}");
-        }
+        using var doc = LlmReply.ParseObject(llmOutput, "候选规则");
 
         var dropped = new List<string>();
         var rules = new List<LearnRuleCandidate>();
@@ -123,7 +93,10 @@ public static class LearnAdvisor
             return new LearnAdvice([], dropped);
         }
 
-        var existing = new HashSet<string>(existingRuleNames, StringComparer.OrdinalIgnoreCase);
+        // 去重参考名归一化（去空/trim）：脏名不参与去重比对
+        var existing = new HashSet<string>(
+            existingRuleNames.Where(n => !string.IsNullOrWhiteSpace(n)).Select(n => n.Trim()),
+            StringComparer.OrdinalIgnoreCase);
 
         foreach (var element in array.EnumerateArray())
         {
@@ -139,17 +112,17 @@ public static class LearnAdvisor
                 continue;
             }
 
-            var name = ReadText(element, "name");
-            var target = ReadText(element, "target")?.ToLowerInvariant() switch
+            var name = LlmReply.ReadText(element, "name");
+            var target = LlmReply.ReadText(element, "target")?.ToLowerInvariant() switch
             {
                 LearnAdvice.TargetYml => LearnAdvice.TargetYml,
                 LearnAdvice.TargetPrompt => LearnAdvice.TargetPrompt,
                 LearnAdvice.TargetChecker => LearnAdvice.TargetChecker,
                 _ => null,
             };
-            var pattern = ReadText(element, "pattern");
-            var evidence = ReadText(element, "evidence");
-            var reason = ReadText(element, "reason");
+            var pattern = LlmReply.ReadText(element, "pattern");
+            var evidence = LlmReply.ReadText(element, "evidence");
+            var reason = LlmReply.ReadText(element, "reason");
 
             if (name is null || target is null || pattern is null || evidence is null || reason is null)
             {
@@ -168,35 +141,5 @@ public static class LearnAdvisor
         }
 
         return new LearnAdvice(rules, dropped);
-    }
-
-    /// <summary>
-    /// 从回复中截取 JSON 对象（容忍 ```json 代码围栏与前后杂文）。
-    /// </summary>
-    private static string ExtractJson(string llmOutput)
-    {
-        var text = llmOutput ?? string.Empty;
-        var start = text.IndexOf('{');
-        var end = text.LastIndexOf('}');
-        if (start < 0 || end <= start)
-        {
-            throw new FormatException($"模型输出中找不到 JSON 对象：{LlmText.Truncate(text, 200)}");
-        }
-
-        return text[start..(end + 1)];
-    }
-
-    /// <summary>
-    /// 读取文本字段（trim + 空值返回 null + 超长截断）。
-    /// </summary>
-    private static string? ReadText(JsonElement element, string propertyName)
-    {
-        if (!element.TryGetProperty(propertyName, out var raw) || raw.ValueKind != JsonValueKind.String)
-        {
-            return null;
-        }
-
-        var text = raw.GetString()?.Trim();
-        return string.IsNullOrEmpty(text) ? null : LlmText.Truncate(text, MaxTextLength);
     }
 }

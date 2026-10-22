@@ -19,10 +19,11 @@ namespace GuardAI.Checks.Assets;
 public sealed class DuplicateCheck : IGuardCheck
 {
     /// <summary>
-    /// 当前检测能力版本：1 = 仅 Jaccard；2 = Jaccard + Containment 双通道。
-    /// 基线低于此版本时首跑自动收编新通道发现的存量对（见 Run 的升级分支）。
+    /// 当前检测能力版本：1 = 仅 Jaccard；2 = Jaccard + Containment 双通道；
+    /// 3 = 字符串字面量带长度 token + 方法名解析修正（元组返回值）——成员键与相似度语义变化，
+    /// 旧基线重键的存量对靠首跑收编吸收（见 Run 的升级分支），不轰炸存量债。
     /// </summary>
-    public const int CurrentDetectorVersion = 2;
+    public const int CurrentDetectorVersion = 3;
 
     /// <inheritdoc />
     public string Name => "duplicate";

@@ -88,4 +88,36 @@ public class CodeSimilarityTests
 
         Assert.True(CodeSimilarity.Containment(a, b) < 0.5);
     }
+
+    [Fact]
+    public void 不同长度字符串字面量区分相似度()
+    {
+        // 回归锁：清洗产物带长度标记 "N"——两段不同提示词（长度不同）曾被归一成同一 token 流判 100% 重复
+        var a = CodeSimilarity.Tokenize("const string system = \"200\" ; var user = \"800\" ; return ( system , user ) ;");
+        var b = CodeSimilarity.Tokenize("const string system = \"260\" ; var user = \"1100\" ; return ( system , user ) ;");
+
+        Assert.True(CodeSimilarity.Jaccard(a, b) < 0.85);
+        Assert.True(CodeSimilarity.Containment(a, b) < 0.9);
+    }
+
+    [Fact]
+    public void 同长度字符串微调仍被吸收()
+    {
+        // 同长度内容微调（换词不换长）保持原语义：内容抹除后仍判完全相似
+        var a = CodeSimilarity.Tokenize("var title = \"12\" ; Save ( title ) ;");
+        var b = CodeSimilarity.Tokenize("var title = \"12\" ; Save ( title ) ;");
+
+        Assert.Equal(1.0, CodeSimilarity.Jaccard(a, b), 3);
+    }
+
+    [Fact]
+    public void 空串占位不带长度token()
+    {
+        // 空串沿用 "" 占位（无长度标记），与既有语义一致
+        var tokens = CodeSimilarity.Tokenize("var x = \"\" ;");
+
+        Assert.Contains("str", tokens);
+        Assert.DoesNotContain(tokens, t => t.StartsWith("len_", StringComparison.Ordinal));
+        Assert.DoesNotContain(tokens, t => t.StartsWith("lenb_", StringComparison.Ordinal));
+    }
 }

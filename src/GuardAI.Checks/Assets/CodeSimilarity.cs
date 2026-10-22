@@ -91,16 +91,37 @@ public static class CodeSimilarity
                 continue;
             }
 
-            // 字符串/字符占位（清洗产物 "" 与 ''）
+            // 字符串占位（清洗产物 "" 或 "N" 长度标记）→ str；带长度标记时追加 len_N 与幂次桶 lenb_N。
+            // 长度进 token：字符串内容归一后不同文本会撞成同一流，长度是最低成本的区分信号——
+            // 精确 len_N 负责区分不同文本，幂次桶 lenb_N 给"±几字微调"留韧性（吸收字面量微调的原语义）
             if (c == '"')
             {
                 i++;
-                if (i < normalizedBody.Length && normalizedBody[i] == '"')
+                var contentStart = i;
+                while (i < normalizedBody.Length && normalizedBody[i] != '"')
                 {
                     i++;
                 }
 
+                var content = normalizedBody[contentStart..i];
+                if (i < normalizedBody.Length)
+                {
+                    i++; // 收尾引号
+                }
+
                 tokens.Add("str");
+                if (content.Length > 0 && long.TryParse(content, out var length) && length > 0)
+                {
+                    tokens.Add($"len_{length}");
+                    var bucket = 1L;
+                    while (bucket < length)
+                    {
+                        bucket <<= 1;
+                    }
+
+                    tokens.Add($"lenb_{bucket}");
+                }
+
                 continue;
             }
 

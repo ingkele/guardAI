@@ -436,7 +436,8 @@ internal static class Program
                 prescan = ProjectScanner.Scan(repo);
                 Console.WriteLine("正在请求 AI 装配建议（大模型分析仓库结构，只发结构摘要不发代码内容）...");
                 var advised = await CallAiWithCancelAsync(aiConfig, "AI 装配建议",
-                    (client, ct) => InitAiAdvisor.AdviseAsync(client, InitDigest.Build(prescan), ct));
+                    (client, ct) => AdvisorRunner.AdviseAsync(
+                        client, InitAiAdvisor.BuildPrompt(InitDigest.Build(prescan)), InitAiAdvisor.ParseReply, ct));
                 if (advised is null)
                 {
                     return ExitError;
@@ -533,7 +534,8 @@ internal static class Program
 
         var aiConfig = ResolveAiConfig(options, repo);
         var advice = await CallAiWithCancelAsync(aiConfig, "规则发现",
-            (client, ct) => LearnAdvisor.AdviseAsync(client, digest, existingNames, ct));
+            (client, ct) => AdvisorRunner.AdviseAsync(
+                client, LearnAdvisor.BuildPrompt(digest), reply => LearnAdvisor.ParseReply(reply, existingNames), ct));
         if (advice is null)
         {
             return ExitError;
