@@ -39,16 +39,18 @@ public sealed record CapabilityIndex(
     string RepoPath,
     IReadOnlyList<CapabilityEntry> Entries)
 {
-    /// <summary>参与索引的代码文件扩展名（C# 语法适配器，P3-M1 只做 .NET）。</summary>
-    private static readonly string[] CodeExtensions = [".cs"];
-
     /// <summary>
     /// 默认排除模式：测试代码不进能力清单（v0.3.1-③）。
     /// 写码前检索只应命中生产实现，测试方法（CacheServiceTests.*）混入会误导复用；
-    /// 只用 *Tests.cs 复数后缀与 tests/ 目录——*Test.cs 单数会误伤 Contest.cs 之类（只漏不误）。
+    /// C# 只用 *Tests.cs 复数后缀——*Test.cs 单数会误伤 Contest.cs 之类（只漏不误）；
+    /// 其余语言按各自测试命名惯例补排除（P4 多语言）。
     /// </summary>
     public static readonly IReadOnlyList<string> DefaultExcludeGlobs =
-        ["**/tests/**", "**/test/**", "**/__tests__/**", "**/*Tests/**", "**/*Tests.cs"];
+        [
+            "**/tests/**", "**/test/**", "**/__tests__/**", "**/*Tests/**", "**/*Tests.cs",
+            "**/*Test.java", "**/*Tests.py", "**/test_*.py", "**/*_test.py", "**/*_test.go",
+            "**/*.test.ts", "**/*.test.js", "**/*.spec.ts", "**/*.spec.js",
+        ];
 
     /// <summary>
     /// 扫描仓库并生成能力清单（全量模式、gitignore 感知、测试代码默认排除）。
@@ -65,14 +67,14 @@ public sealed record CapabilityIndex(
         ArgumentNullException.ThrowIfNull(repoPath);
 
         var excludes = excludeGlobs ?? ResolveExcludeGlobs(repoPath);
-        var files = TargetFileCollector.Collect(repoPath, CheckMode.All, CodeExtensions)
+        var files = TargetFileCollector.Collect(repoPath, CheckMode.All, MemberParserRegistry.Extensions)
             .Where(f => !excludes.Any(g => GlobMatcher.IsMatch(f, g)))
             .ToList();
         var entries = new List<CapabilityEntry>();
         foreach (var file in files)
         {
             var text = File.ReadAllText(Path.Combine(repoPath, file.Replace('/', Path.DirectorySeparatorChar)));
-            foreach (var member in CSharpMemberParser.Parse(text, file))
+            foreach (var member in MemberParserRegistry.Parse(text, file))
             {
                 entries.Add(new CapabilityEntry(
                     member.TypeName, member.Name, member.Signature, member.File, member.Line, member.BodyHash,

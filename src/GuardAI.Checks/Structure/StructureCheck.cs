@@ -1,3 +1,4 @@
+using GuardAI.Checks.Assets;
 using GuardAI.Core.Config;
 using GuardAI.Core.Engine;
 
@@ -22,7 +23,12 @@ public sealed class StructureCheck : IGuardCheck
     public CheckResult Run(CheckContext context)
     {
         var config = context.Config;
-        var files = TargetFileCollector.Collect(context.RepoPath, context.Mode, config.IncludeExtensions);
+
+        // 扩展名空 = 跟随成员解析注册表全量语言（P4 多语言单一来源）；显式配置只查配置内
+        var extensions = config.IncludeExtensions.Count > 0
+            ? config.IncludeExtensions
+            : MemberParserRegistry.Extensions;
+        var files = TargetFileCollector.Collect(context.RepoPath, context.Mode, extensions);
         var violations = new List<Violation>();
 
         foreach (var rel in files)

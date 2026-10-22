@@ -20,16 +20,17 @@ public sealed class DuplicateCheck : IGuardCheck
 {
     /// <summary>
     /// 当前检测能力版本：1 = 仅 Jaccard；2 = Jaccard + Containment 双通道；
-    /// 3 = 字符串字面量带长度 token + 方法名解析修正（元组返回值）——成员键与相似度语义变化，
+    /// 3 = 字符串字面量带长度 token + 方法名解析修正（元组返回值）；
+    /// 4 = 多语言成员解析（Java/Kotlin/TS/JS/Go/Python）+ 声明形态闸——检测面与成员键语义变化，
     /// 旧基线重键的存量对靠首跑收编吸收（见 Run 的升级分支），不轰炸存量债。
     /// </summary>
-    public const int CurrentDetectorVersion = 3;
+    public const int CurrentDetectorVersion = 4;
 
     /// <inheritdoc />
     public string Name => "duplicate";
 
-    /// <summary>近似检测用的代码文件扩展名（C# 语法适配器，P3-M2 只做 .NET）。</summary>
-    private static readonly string[] CodeExtensions = [".cs"];
+    /// <summary>近似检测用的代码文件扩展名 = 注册表全量支持语言（P4 多语言，单一来源在 MemberParserRegistry）。</summary>
+    private static readonly IReadOnlyList<string> CodeExtensions = MemberParserRegistry.Extensions;
 
     /// <inheritdoc />
     public CheckResult Run(CheckContext context)
@@ -259,7 +260,7 @@ public sealed class DuplicateCheck : IGuardCheck
             }
 
             var text = File.ReadAllText(Path.Combine(repoPath, file.Replace('/', Path.DirectorySeparatorChar)));
-            members.AddRange(CSharpMemberParser.Parse(text, file));
+            members.AddRange(MemberParserRegistry.Parse(text, file));
         }
 
         return members;

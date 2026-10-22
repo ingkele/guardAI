@@ -5,7 +5,7 @@ namespace GuardAI.Tests;
 /// <summary>
 /// C# 轻量语法适配器测试：抽取正确性与"只漏不误"原则。
 /// </summary>
-public class CSharpMemberParserTests
+public class CLikeMemberParserTests
 {
     [Fact]
     public void 抽取公共方法的类型签名行号与方法体()
@@ -23,7 +23,7 @@ public class CSharpMemberParserTests
             }
             """;
 
-        var members = CSharpMemberParser.Parse(source, "src/Demo/FileStorageService.cs");
+        var members = CLikeMemberParser.Parse(source, "src/Demo/FileStorageService.cs");
 
         var member = Assert.Single(members);
         Assert.Equal("FileStorageService", member.TypeName);
@@ -62,7 +62,7 @@ public class CSharpMemberParserTests
             }
             """;
 
-        var members = CSharpMemberParser.Parse(source, "Repo.cs");
+        var members = CLikeMemberParser.Parse(source, "Repo.cs");
 
         var member = Assert.Single(members);
         Assert.Equal("SaveAsync", member.Name);
@@ -85,7 +85,7 @@ public class CSharpMemberParserTests
             }
             """;
 
-        Assert.Empty(CSharpMemberParser.Parse(source, "Widget.cs"));
+        Assert.Empty(CLikeMemberParser.Parse(source, "Widget.cs"));
     }
 
     [Fact]
@@ -98,7 +98,7 @@ public class CSharpMemberParserTests
             }
             """;
 
-        var members = CSharpMemberParser.Parse(source, "Calc.cs");
+        var members = CLikeMemberParser.Parse(source, "Calc.cs");
 
         var member = Assert.Single(members);
         Assert.Equal("Add", member.Name);
@@ -121,7 +121,7 @@ public class CSharpMemberParserTests
             }
             """;
 
-        var members = CSharpMemberParser.Parse(source, "Svc.cs");
+        var members = CLikeMemberParser.Parse(source, "Svc.cs");
 
         var member = Assert.Single(members);
         Assert.Equal("BuildAsync", member.Name);
@@ -145,7 +145,7 @@ public class CSharpMemberParserTests
             }
             """;
 
-        var members = CSharpMemberParser.Parse(source, "Doc.cs");
+        var members = CLikeMemberParser.Parse(source, "Doc.cs");
 
         var member = Assert.Single(members);
         Assert.Equal("Real", member.Name);
@@ -174,8 +174,8 @@ public class CSharpMemberParserTests
             }
             """;
 
-        var memberA = Assert.Single(CSharpMemberParser.Parse(a, "A.cs"));
-        var memberB = Assert.Single(CSharpMemberParser.Parse(b, "B.cs"));
+        var memberA = Assert.Single(CLikeMemberParser.Parse(a, "A.cs"));
+        var memberB = Assert.Single(CLikeMemberParser.Parse(b, "B.cs"));
 
         Assert.Equal(memberA.BodyHash, memberB.BodyHash);
     }
@@ -198,7 +198,7 @@ public class CSharpMemberParserTests
             }
             """;
 
-        var members = CSharpMemberParser.Parse(source, "A.cs");
+        var members = CLikeMemberParser.Parse(source, "A.cs");
 
         Assert.Collection(members,
             m => Assert.Equal("One", m.Name),
@@ -224,7 +224,7 @@ public class CSharpMemberParserTests
             }
             """;
 
-        var members = CSharpMemberParser.Parse(source, "Outer.cs");
+        var members = CLikeMemberParser.Parse(source, "Outer.cs");
 
         var member = Assert.Single(members);
         Assert.Equal("Run", member.Name);
@@ -250,7 +250,7 @@ public class CSharpMemberParserTests
             }
             """;
 
-        var member = Assert.Single(CSharpMemberParser.Parse(source, "Snapshot.cs"));
+        var member = Assert.Single(CLikeMemberParser.Parse(source, "Snapshot.cs"));
 
         Assert.Equal("Snapshot", member.TypeName);
         Assert.Equal("Render", member.Name);
@@ -277,7 +277,7 @@ public class CSharpMemberParserTests
             }
             """;
 
-        var members = CSharpMemberParser.Parse(source, "Two.cs");
+        var members = CLikeMemberParser.Parse(source, "Two.cs");
 
         Assert.Collection(members,
             m =>
@@ -306,7 +306,7 @@ public class CSharpMemberParserTests
             }
             """;
 
-        var members = CSharpMemberParser.Parse(source, "src/Demo/Advisor.cs");
+        var members = CLikeMemberParser.Parse(source, "src/Demo/Advisor.cs");
 
         var member = Assert.Single(members);
         Assert.Equal("BuildPrompt", member.Name);

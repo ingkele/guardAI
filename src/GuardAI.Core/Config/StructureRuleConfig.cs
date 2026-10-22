@@ -52,8 +52,11 @@ public sealed class StructureRuleConfig
     /// </summary>
     public IReadOnlyList<ProjectTypeOverride> ProjectTypeOverrides { get; init; } = [];
 
-    /// <summary>参与检查的文件扩展名（小写、带点）。</summary>
-    public IReadOnlyList<string> IncludeExtensions { get; init; } = [".cs"];
+    /// <summary>
+    /// 参与检查的文件扩展名（小写、带点）。空 = 跟随成员解析注册表的全量支持语言
+    /// （P4 多语言：C#/Java/Kotlin/TS/JS/Go/Python），显式配置则只查配置内的扩展名。
+    /// </summary>
+    public IReadOnlyList<string> IncludeExtensions { get; init; } = [];
 
     /// <summary>同义目录黑名单：路径中出现任一目录名即违规（不区分大小写）。</summary>
     public IReadOnlyList<string> BannedDirs { get; init; } = [];
@@ -115,10 +118,7 @@ public static class StructureRuleConfigLoader
             include.Add(AsString(e).ToLowerInvariant());
         }
 
-        if (include.Count == 0)
-        {
-            include.Add(".cs");
-        }
+        // 空 = 跟随成员解析注册表全量语言（P4 多语言），不再强填 .cs——由 StructureCheck 回落
 
         var banned = new List<string>();
         foreach (var e in AsList(root, "banned_dirs", configFileName))
