@@ -117,13 +117,13 @@ setx MIMO_API_KEY "你的密钥"        # 永久生效（新开窗口才生效�
 
 ```
 src/GuardAI.Core      规则引擎（YAML 解析、通配匹配、文件收集、报告）
-src/GuardAI.Checks    检查模块（structure / duplicate 双通道 / secret 密钥扫描 / 能力清单 / 多语言成员解析）
+src/GuardAI.Checks    检查模块（structure / duplicate 双通道 / secret 密钥扫描 / doc 注释 / sql 拼接 / perf 性能 / 能力清单 / 多语言成员解析）
 src/GuardAI.AI        AI 层（review 审查员 / init --ai 装配顾问 / learn 规则发现员 / LLM 三协议接入）
 src/GuardAI.Init      装配器（扫描、配置生成、闸口安装）
 src/GuardAI.Cli       单入口命令行
 config/presets        语言预设（规则资产）
 templates             闸口模板（CI / hook / AGENTS 片段）
-tests/GuardAI.Tests   xUnit 单测（287 用例）
+tests/GuardAI.Tests   xUnit 单测（317 用例）
 docs/cases            案例库（50 案例 / 39 规则）
 ```
 
@@ -133,8 +133,8 @@ docs/cases            案例库（50 案例 / 39 规则）
 
 | 场景 | 结果 |
 |---|---|
-| 全量单测 | ✅ 287/287 |
-| 自举：guardAI 检查自身仓库 | ✅ structure 93 文件 0 违规 + duplicate 87 文件 0 违规 + secret 0 违规（特征描述/假密钥夹具走 exclusions 豁免） |
+| 全量单测 | ✅ 317/317 |
+| 自举：guardAI 检查自身仓库 | ✅ 六模块全过 0 违规（structure / duplicate / secret / doc / sql / perf；特征描述/假密钥夹具走 exclusions 豁免） |
 | 违规现场（DemoShop 实测） | ✅ 5 处全抓，退出码 1 |
 | 多语言冒烟（Java 真重复） | ✅ 100% 相似 3 处全逮，存量债首跑收编不轰炸 |
 

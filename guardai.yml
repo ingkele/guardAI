@@ -52,6 +52,8 @@ allowed_dirs:
     purpose: P3 资产级检查插槽（重复检测、能力清单，产品设计方案骨架预留，2026-10-21 确认纳入）
   - path: src/GuardAI.Checks/Security/*
     purpose: secret 密钥扫描检查模块（AI 审查密钥泄露发现的沉淀，2026-10-22 人工确认后补进）
+  - path: src/GuardAI.Checks/Code/*
+    purpose: 代码级检查模块（doc/sql/perf，learn 回放 91 发现人工筛沉淀，2026-10-23 补进）
   - path: src/GuardAI.Cli/*
     purpose: init 实测既有子目录
   - path: src/GuardAI.Core/*

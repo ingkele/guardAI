@@ -4,6 +4,7 @@ using GuardAI.AI.Config;
 using GuardAI.AI.Llm;
 using GuardAI.AI.Review;
 using GuardAI.Checks.Assets;
+using GuardAI.Checks.Code;
 using GuardAI.Checks.Security;
 using GuardAI.Checks.Structure;
 using GuardAI.Cli;
@@ -99,13 +100,13 @@ internal static class Program
         var context = new CheckContext(repo, mode, config, Path.GetFileName(configPath), strict);
 
         // 检查模块插槽：新增模块在此注册即可（调用方式永远不变）
-        var checks = new List<IGuardCheck> { new StructureCheck(), new DuplicateCheck(), new SecretScanCheck() };
+        var checks = new List<IGuardCheck> { new StructureCheck(), new DuplicateCheck(), new SecretScanCheck(), new DocCheck(), new SqlSafetyCheck(), new PerfCheck() };
         if (Get(options, "only") is { } only && only != "all")
         {
             checks = checks.Where(c => string.Equals(c.Name, only, StringComparison.OrdinalIgnoreCase)).ToList();
             if (checks.Count == 0)
             {
-                return Fail($"未知检查模块: {only}（可用：structure / duplicate / secret / all）");
+                return Fail($"未知检查模块: {only}（可用：structure / duplicate / secret / doc / sql / perf / all）");
             }
         }
 

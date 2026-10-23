@@ -37,7 +37,7 @@ internal static class CliHelp
     {
         new(
             "check",
-            "guardAI check [--repo <路径>] [--mode changed|all] [--only structure|duplicate|secret|all]{nl}" +
+            "guardAI check [--repo <路径>] [--mode changed|all] [--only structure|duplicate|secret|doc|sql|perf|all]{nl}" +
             "              [--config <文件>] [--report <文件>] [--html <文件>] [--json]{nl}" +
             "              [--trigger cli|hook|ci] [--no-record] [--update-baseline] [--strict]",
             "执行检查（0=通过 / 1=违规 / 2=配置或环境错误），结果自动记入台账。{nl}" +

@@ -14,11 +14,12 @@ namespace GuardAI.Init;
 /// </remarks>
 public static class ConfigGenerator
 {
-    /// <summary>AI 惯用的野目录黑名单（与 guard-tool 预设一致）。</summary>
+    /// <summary>AI 惯用的野目录黑名单（与 guard-tool 预设一致；learn 回放补职责混杂命名 2026-10-23）。</summary>
     private static readonly string[] BannedDirs =
     [
         "utils2", "util", "uitli", "uitls", "helper", "helpers",
         "common", "shared", "misc", "temp", "tmp", "lib", "libs",
+        "commonutils", "mynewhelpers",
     ];
 
     /// <summary>
