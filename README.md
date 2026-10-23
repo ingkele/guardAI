@@ -14,6 +14,25 @@ AI 写代码的三类无声腐蚀：
 
 guardAI 管"结构级 + 资产级"规范门禁，并做接入自动化（CI / pre-commit / AI hook 一键装配）。
 
+## 核心功能
+
+**六大检查器**（`guardAI check` 一条命令全跑，或 `--only <模块>` 单查）：
+
+| 模块 | 查什么 | 抓什么 |
+|---|---|---|
+| `structure` | 目录白名单 + 落位规则 | AI 自建野目录（utils2 / helpers 类）、文件放错层 |
+| `duplicate` | 双通道近似重复（Jaccard + 包含度） | 复制粘贴改名、换皮重写（基线机制防存量轰炸） |
+| `secret` | 敏感文件 / 目录 / 内容三道闸 | 硬编码密钥、私钥入库（报行号，值不回显） |
+| `doc` | 公共 API 文档注释 | public 类型 / 方法缺 `///` 摘要（`<inheritdoc />` 算有） |
+| `sql` | SQL 拼接构造 | 插值含洞 / 标识符拼接 / string.Format 拼 SQL（注入防线前置） |
+| `perf` | 数据访问性能 | 循环内查库 N+1、SELECT * 全列查询 |
+
+**AI 层三步**（需 KEY）：`review` 语义审查（默认只报告，`--fail-on` 才拦截）→ `init --ai` AI 装配建议（确定性校验兜底，不冤枉存量）→ `learn` 规则发现员（审查素材提炼候选规则，人工确认后沉淀为规则资产）。
+
+**资产级闭环**：`index` / `search` 能力清单——写码前强制检索，防重复造轮子；`ui` 台账网页看闭环率（违规指纹消失 = 已修复）。
+
+每个违规都带【给 AI 的修复指令】，能直接照着修，修完复检到 0 违规。
+
 ## 启动方式（三选一）
 
 ### 方式一：发行版（推荐，零依赖）
@@ -55,6 +74,8 @@ guardAI review --repo "D:\你的项目"               # AI 语义审查：命名
 guardAI review --repo "D:\散文件目录" --mode all   # 非 git 目录全量送审代码文件（案例/散文件场景）
 guardAI learn --repo "D:\你的项目"                # AI 规则发现员：从审查素材提炼候选规则（需 KEY）
 guardAI ui --repo "D:\你的项目"                   # 本地台账网页：审查记录 / 闭环率
+guardAI mcp --repo "D:\你的项目"                  # 启动 MCP server（stdio，AI 客户端接入，见下）
+guardAI doctor --repo "D:\你的项目"               # 环境与配置自检（排障第一步）
 ```
 
 ## 命令一览与退出码
@@ -71,6 +92,32 @@ guardAI ui --repo "D:\你的项目"                   # 本地台账网页：审
 | `index` / `search` | 能力清单生成 / 写码前强制检索（防重复造轮子） | 否 |
 
 **退出码（全命令统一）**：`0` 通过 / `1` 存在违规 / `2` 配置或环境错误——CI 与 hook 由此区分"拦下"与"跑挂了"。
+
+## MCP 接入（AI 客户端直调）
+
+`guardAI mcp` 启动 stdio MCP server——AI 客户端（Claude Code / Cursor / WorkBuddy 等）不走 shell、直接工具调用 guardAI。四工具与 CLI **完全同源**（同一引擎，不出现两套口径）：
+
+| MCP 工具 | 等价 CLI | 干什么 |
+|---|---|---|
+| `search_capability` | `guardAI search` | **写码前强制检索**：查能力清单防重复造轮子，命中必须复用 |
+| `scan_project` | `guardAI check --json` | 跑检查，返回违规 + 【给 AI 的修复指令】 |
+| `generate_config` | init 的配置生成段 | 产 guardai.yml YAML（不落盘，AI 提议、人来定） |
+| `get_report` | `guardAI ui` 的数据源 | 读台账闭环汇总（`.guard/records/`） |
+
+客户端配置示例（`command` 按实际路径，Linux 换成 `GuardAI.Cli`）：
+
+```json
+{
+  "mcpServers": {
+    "guardAI": {
+      "command": "GuardAI.Cli.exe",
+      "args": ["mcp", "--repo", "D:\\你的项目"]
+    }
+  }
+}
+```
+
+server 自带使用指引注入：AI 连上即被告知"写新类 / 新方法前先调 `search_capability`，命中必须复用禁止换皮重写；违规按返回的修复指令修完复检"——把「**写码前检索 → 写完检查 → 按指令修**」闭环直接塞进 AI 的工具栏，不靠 AI 自觉读文档。
 
 ## KEY 配置（AI 能力专用）
 
@@ -111,7 +158,7 @@ setx MIMO_API_KEY "你的密钥"        # 永久生效（新开窗口才生效�
 | git pre-commit | 本地提交 | `templates/hooks/pre-commit` |
 | CI（GitHub Actions / Gitee Go） | 合入底线，与"谁写的代码"无关 | `templates/ci/` |
 
-外加 `AGENTS.md` 注入片段（骨架红线 + 检索先行 + 改完复检），带版本戳自动升级。
+外加 `AGENTS.md` 注入片段（骨架红线 + 检索先行 + 改完复检 + 命名 / 分层 / DTO / 魔法串规矩，directive-version 3），带版本戳自动升级。
 
 ## 项目结构
 
