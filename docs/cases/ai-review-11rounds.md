@@ -36,7 +36,7 @@
 **位置**：`src/GuardAI.AI/Review/DiffCollector.cs:43`
 **问题**：未跟踪文件的完整内容直接送入外部大模型接口，未过滤 `.env`、`*.pem`、`*.key`、`credentials` 等敏感文件——这些文件通常是新增且未被 gitignore 忽略的，恰好会被 `ls-files --others --exclude-standard` 收集并外发，存在密钥泄露到第三方模型服务的风险。
 **根因**：收集逻辑只关心"有哪些改动"，没有"外发边界"意识；送审通道默认信任所有 diff 内容。
-**修复**：DiffCollector 三道敏感过滤闸——①文件名模式（`.env*`/`credentials*`/`*.pem|key|p12|pfx|jks|keystore|ppk|kdbx`/`id_rsa*` 等，路径段边界+行尾锚定）②目录模式（`.aws/`、`.ssh/`、`.gnupg/`、`.kube/`）③内容特征（`BEGIN PRIVATE KEY`、`sk-` 长令牌、`AKIA` AWS Key）；命中只记文件名进跳过清单，**内容零外发**；宁可漏审不外发。
+**修复**：DiffCollector 三道敏感过滤闸——①文件名模式（`.env*`/`credentials*`/`*.pem|key|p12|pfx|jks|keystore|ppk|kdbx`/`id_rsa*` 等，路径段边界+行尾锚定）②目录模式（`.aws/`、`.ssh/`、`.gnupg/`、`.kube/`）③内容特征（PEM 私钥头、长 API 令牌、AWS AccessKey）；命中只记文件名进跳过清单，**内容零外发**；宁可漏审不外发。2026-10-22 沉淀为 `secret` 检查模块（特征文本与送审侧同步测试锁定）。
 **可沉淀规则**：`任何把代码/文件内容送外部服务的动作，必须先过敏感过滤（文件名+目录+内容特征），命中只报文件名不发内容` → 【本地检查】+【提示词规则】
 
 ---

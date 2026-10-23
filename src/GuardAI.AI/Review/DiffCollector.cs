@@ -19,20 +19,32 @@ public static class DiffCollector
     /// <summary>单个新增文件的预筛上限（按字节数计）：超过则整体跳过，避免把大文件整读进内存；与 <see cref="MaxFileChars"/> 是"字节预筛 / 字符截断"两个不同阶段。</summary>
     private const long MaxFileBytes = 1_000_000;
 
-    /// <summary>疑似密钥文件名模式（文件名层面拦截，不读内容；锚定路径段边界与行尾，不误伤 .environment / CredentialsXxx.cs 等普通命名）。</summary>
-    private static readonly Regex SensitiveNamePattern = new(
+    /// <summary>疑似密钥文件名模式文本（文件名层面拦截，不读内容；锚定路径段边界与行尾，不误伤 .environment / CredentialsXxx.cs 等普通命名）。公共常量供 secret 检查同步测试防漂移。</summary>
+    public const string SensitiveNamePatternText =
         @"(^|/)(\.env(\..+)?|credentials(\.[a-z]+)?|secrets?\.(yml|yaml|json)|id_(rsa|dsa|ecdsa|ed25519)(\..+)?)$" +
-        @"|(\.(pem|key|p12|pfx|jks|keystore|ppk|kdbx)$)",
+        @"|(\.(pem|key|p12|pfx|jks|keystore|ppk|kdbx)$)";
+
+    /// <summary>疑似密钥所在目录模式文本（整目录不外发；锚定路径段边界防误伤）。</summary>
+    public const string SensitiveDirPatternText =
+        @"(^|/)(\.aws|\.ssh|\.gnupg|\.kube)/";
+
+    /// <summary>内容密钥特征模式文本（PEM 私钥头、长 API 令牌、AWS AccessKey）。</summary>
+    public const string SecretContentPatternText =
+        @"(BEGIN [A-Z ]*PRIVATE KEY)|(sk-[A-Za-z0-9_-]{20,})|(AKIA[0-9A-Z]{16})";
+
+    /// <summary>疑似密钥文件名模式（文件名层面拦截，不读内容）。</summary>
+    private static readonly Regex SensitiveNamePattern = new(
+        SensitiveNamePatternText,
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-    /// <summary>疑似密钥所在目录（整目录不外发；锚定路径段边界防误伤）。</summary>
+    /// <summary>疑似密钥所在目录（整目录不外发）。</summary>
     private static readonly Regex SensitiveDirPattern = new(
-        @"(^|/)(\.aws|\.ssh|\.gnupg|\.kube)/",
+        SensitiveDirPatternText,
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     /// <summary>内容密钥特征（PEM 私钥头、长 API 令牌、AWS AccessKey）。</summary>
     private static readonly Regex SecretContentPattern = new(
-        @"(BEGIN [A-Z ]*PRIVATE KEY)|(sk-[A-Za-z0-9_-]{20,})|(AKIA[0-9A-Z]{16})",
+        SecretContentPatternText,
         RegexOptions.Compiled);
 
     /// <summary>diff 段头的文件路径提取模式（取 b/ 侧）。</summary>

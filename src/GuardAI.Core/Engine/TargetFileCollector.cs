@@ -23,10 +23,10 @@ public static class TargetFileCollector
     /// </summary>
     /// <param name="repoPath">目标仓库根目录。</param>
     /// <param name="mode">收集模式。</param>
-    /// <param name="includeExtensions">参与检查的扩展名（小写、带点）。</param>
+    /// <param name="includeExtensions">参与检查的扩展名（小写、带点）；null = 不限扩展名收集全部文件（密钥扫描用——.env / id_rsa 等凭据文件常无代码扩展名）。</param>
     /// <returns>文件相对路径列表。</returns>
     /// <exception cref="InvalidOperationException">changed 模式下目标不是 git 仓库时抛出。</exception>
-    public static IReadOnlyList<string> Collect(string repoPath, CheckMode mode, IReadOnlyList<string> includeExtensions)
+    public static IReadOnlyList<string> Collect(string repoPath, CheckMode mode, IReadOnlyList<string>? includeExtensions)
     {
         var files = new List<string>();
         if (mode == CheckMode.Changed)
@@ -40,7 +40,7 @@ public static class TargetFileCollector
 
         var ignore = GitIgnoreFilter.Load(repoPath);
         var filtered = files
-            .Where(f => includeExtensions.Contains(Path.GetExtension(f).ToLowerInvariant()))
+            .Where(f => includeExtensions is null || includeExtensions.Contains(Path.GetExtension(f).ToLowerInvariant()))
             .Where(f => !ignore.IsIgnored(f))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(f => f, StringComparer.OrdinalIgnoreCase)

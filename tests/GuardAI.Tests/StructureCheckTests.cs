@@ -35,7 +35,7 @@ public class StructureCheckTests
     {
         // v0.3.1-⑤：ServiceDefaults 是类库（门面扩展类放模块根是模板惯例）不适用 app 落位规则；
         // 同仓库的 app 项目下扩展类照样必须进 Extensions/
-        using var fixture = new TempFixture([
+        using var fixture = new TempRepoFixture([
             "AspireApp.ServiceDefaults/Extensions.cs",
             "AspireApp.Web/StringExtensions.cs",
         ]);
@@ -67,7 +67,7 @@ public class StructureCheckTests
     [Fact]
     public void 合规骨架零违规()
     {
-        using var fixture = new TempFixture(CleanFiles);
+        using var fixture = new TempRepoFixture(CleanFiles);
         var result = Run(fixture.Path, BuildDotNetConfig());
 
         Assert.Equal(6, result.Scanned);
@@ -77,7 +77,7 @@ public class StructureCheckTests
     [Fact]
     public void 违规现场五处全抓且规则归属正确()
     {
-        using var fixture = new TempFixture(CleanFiles.Concat(ViolationFiles).ToArray());
+        using var fixture = new TempRepoFixture(CleanFiles.Concat(ViolationFiles).ToArray());
         var result = Run(fixture.Path, BuildDotNetConfig());
 
         Assert.Equal(9, result.Scanned);
@@ -114,7 +114,7 @@ public class StructureCheckTests
                 reason: 测试固定现场
             """);
 
-        using var fixture = new TempFixture(["src/App/utils2/UploadHelper.cs"]);
+        using var fixture = new TempRepoFixture(["src/App/utils2/UploadHelper.cs"]);
         var result = Run(fixture.Path, config);
 
         Assert.Empty(result.Violations);
@@ -140,7 +140,7 @@ public class StructureCheckTests
                 scope: app
             """);
 
-        using var fixture = new TempFixture(["framework/WitchC/WitchCExtensions.cs"]);
+        using var fixture = new TempRepoFixture(["framework/WitchC/WitchCExtensions.cs"]);
         var result = Run(fixture.Path, config);
 
         Assert.Empty(result.Violations);
@@ -170,7 +170,7 @@ public class StructureCheckTests
                 scope: all
             """);
 
-        using var fixture = new TempFixture(["src/App/StringExtensions.cs", "src/App/FileHelper.cs"]);
+        using var fixture = new TempRepoFixture(["src/App/StringExtensions.cs", "src/App/FileHelper.cs"]);
         var result = Run(fixture.Path, config);
 
         Assert.Equal(2, result.Violations.Count);
@@ -199,30 +199,5 @@ public class StructureCheckTests
     {
         var context = new CheckContext(repoPath, CheckMode.All, config, "guardai.yml");
         return new StructureCheck().Run(context);
-    }
-
-    /// <summary>临时目录夹具：按相对路径批量生成文件，退出时整体清理。</summary>
-    private sealed class TempFixture : IDisposable
-    {
-        public TempFixture(string[] relativePaths)
-        {
-            Path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "guardai-tests", Guid.NewGuid().ToString("N"));
-            foreach (var rel in relativePaths)
-            {
-                var full = System.IO.Path.Combine(Path, rel.Replace('/', System.IO.Path.DirectorySeparatorChar));
-                Directory.CreateDirectory(System.IO.Path.GetDirectoryName(full)!);
-                File.WriteAllText(full, "// 测试夹具");
-            }
-        }
-
-        public string Path { get; }
-
-        public void Dispose()
-        {
-            if (Directory.Exists(Path))
-            {
-                Directory.Delete(Path, recursive: true);
-            }
-        }
     }
 }

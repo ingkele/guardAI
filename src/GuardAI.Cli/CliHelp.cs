@@ -37,7 +37,7 @@ internal static class CliHelp
     {
         new(
             "check",
-            "guardAI check [--repo <路径>] [--mode changed|all] [--only structure|duplicate|all]{nl}" +
+            "guardAI check [--repo <路径>] [--mode changed|all] [--only structure|duplicate|secret|all]{nl}" +
             "              [--config <文件>] [--report <文件>] [--html <文件>] [--json]{nl}" +
             "              [--trigger cli|hook|ci] [--no-record] [--update-baseline] [--strict]",
             "执行检查（0=通过 / 1=违规 / 2=配置或环境错误），结果自动记入台账。{nl}" +
@@ -46,6 +46,7 @@ internal static class CliHelp
             {
                 "guardAI check                       # 检查当前仓库的 git 变更",
                 "guardAI check --mode all            # 全量检查（CI 用）",
+                "guardAI check --only secret         # 只查密钥泄露（疑似凭据文件 / 硬编码密钥）",
                 "guardAI check --html 报告.html      # 生成单页 HTML 体检报告（含与上次对比）",
                 "guardAI check --strict              # 严格审计：存量重复（基线内）也报违规，案例验收用",
             }),

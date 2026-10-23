@@ -2,7 +2,7 @@
 
 > 确定性引擎裁判合规，AI 只做装配。让任何项目在 10 分钟内接入"结构级 + 资产级"规范门禁。
 
-**当前版本**：v0.5.1 · **分发**：win-x64 / linux-x64 自包含单文件（零运行时依赖）· **开发**：.NET 10 · **单测**：274
+**当前版本**：v0.5.1 · **分发**：win-x64 / linux-x64 自包含单文件（零运行时依赖）· **开发**：.NET 10 · **单测**：287
 
 ## 它解决什么
 
@@ -100,7 +100,7 @@ setx MIMO_API_KEY "你的密钥"        # 永久生效（新开窗口才生效�
 ### 密钥安全
 
 - `api_key_env` 只存环境变量**名**，密钥值全程不落盘、不进 git；
-- 送审内容外发前自动过滤疑似密钥/凭据（`.env*` / `*.pem` / `*.key` / `id_rsa*` 等文件名、`BEGIN PRIVATE KEY` / `sk-` 令牌等内容特征），只报文件名清单，**密钥内容不出本机**；
+- 送审内容外发前自动过滤疑似密钥/凭据（`.env*` / `*.pem` / `*.key` / `id_rsa*` 等文件名、PEM 私钥头 / 长 API 令牌 / AWS AccessKey 等内容特征），只报文件名清单，**密钥内容不出本机**；
 - 本地优先：代码内容只发给 `ai:` 段配置的模型服务；用本地 Ollama 则完全不出本机。
 
 ## 三道闸口（`guardAI init` 自动装配）
@@ -117,13 +117,13 @@ setx MIMO_API_KEY "你的密钥"        # 永久生效（新开窗口才生效�
 
 ```
 src/GuardAI.Core      规则引擎（YAML 解析、通配匹配、文件收集、报告）
-src/GuardAI.Checks    检查模块（structure / duplicate 双通道 / 能力清单 / 多语言成员解析）
+src/GuardAI.Checks    检查模块（structure / duplicate 双通道 / secret 密钥扫描 / 能力清单 / 多语言成员解析）
 src/GuardAI.AI        AI 层（review 审查员 / init --ai 装配顾问 / learn 规则发现员 / LLM 三协议接入）
 src/GuardAI.Init      装配器（扫描、配置生成、闸口安装）
 src/GuardAI.Cli       单入口命令行
 config/presets        语言预设（规则资产）
 templates             闸口模板（CI / hook / AGENTS 片段）
-tests/GuardAI.Tests   xUnit 单测（256 用例）
+tests/GuardAI.Tests   xUnit 单测（287 用例）
 docs/cases            案例库（50 案例 / 39 规则）
 ```
 
@@ -133,8 +133,8 @@ docs/cases            案例库（50 案例 / 39 规则）
 
 | 场景 | 结果 |
 |---|---|
-| 全量单测 | ✅ 256/256 |
-| 自举：guardAI 检查自身仓库 | ✅ structure 93 文件 0 违规 + duplicate 87 文件 0 违规 |
+| 全量单测 | ✅ 287/287 |
+| 自举：guardAI 检查自身仓库 | ✅ structure 93 文件 0 违规 + duplicate 87 文件 0 违规 + secret 0 违规（特征描述/假密钥夹具走 exclusions 豁免） |
 | 违规现场（DemoShop 实测） | ✅ 5 处全抓，退出码 1 |
 | 多语言冒烟（Java 真重复） | ✅ 100% 相似 3 处全逮，存量债首跑收编不轰炸 |
 

@@ -50,6 +50,8 @@ allowed_dirs:
     purpose: init 实测既有子目录
   - path: src/GuardAI.Checks/Assets/*
     purpose: P3 资产级检查插槽（重复检测、能力清单，产品设计方案骨架预留，2026-10-21 确认纳入）
+  - path: src/GuardAI.Checks/Security/*
+    purpose: secret 密钥扫描检查模块（AI 审查密钥泄露发现的沉淀，2026-10-22 人工确认后补进）
   - path: src/GuardAI.Cli/*
     purpose: init 实测既有子目录
   - path: src/GuardAI.Core/*
@@ -105,6 +107,14 @@ placement_rules:
     dir_pattern: "**/Extensions/**"
     suggest: "移动到所在项目的 Extensions/ 目录下；先检索是否已有同名扩展方法"
     scope: app
+
+# 豁免规则：命中 path 的文件整体跳过检查（合法例外逃生口，必须写明 reason 便于审查）
+# 自举豁免：secret 检查的特征描述/假密钥测试夹具/历史审查存档——非真实凭据
+exclusions:
+  - path: tests/GuardAI.Tests/DiffCollectorTests.cs
+    reason: 送审过滤测试夹具含假密钥样例（验证密钥不外发），非真实凭据
+  - path: docs/cases/raw/**
+    reason: 历史 AI 审查原始存档（含引用的假密钥片段），只读不改写
 
 # AI 语义审查（guardAI review）：大模型接入配置
 # 密钥放环境变量不落配置：api_key_env 指定环境变量名
