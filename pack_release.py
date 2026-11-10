@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""guardAI 发版打包脚本：Python zipfile 正斜杠 arcname，防 Linux unzip 反斜杠路径炸。"""
+"""guardAI 发版打包脚本：Python zipfile 正斜杠 arcname，防 Linux unzip 反斜杠路径炸。
+条目带 {rid}/ 顶层目录（如 linux-x64/GuardAI.Cli），与 CI 模板 unzip 后的路径约定一致。"""
 import os
 import sys
 import zipfile
@@ -18,11 +19,13 @@ for rid in ("win-x64", "linux-x64"):
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as zf:
         for root, _dirs, files in os.walk(src):
             for name in files:
+                if name.lower() == "guardai.exe":
+                    continue  # 本地调用别名硬链接，不随包发布
                 full = os.path.join(root, name)
                 rel = os.path.relpath(full, src).replace(os.sep, "/")  # 强制正斜杠
                 if "\\" in rel:
                     bad += 1
-                zf.write(full, rel)
+                zf.write(full, f"{rid}/{rel}")  # 保留 rid/ 顶层目录，对齐 CI 模板路径
                 count += 1
     size_mb = os.path.getsize(out) / 1024 / 1024
     print(f"{rid}: {count} 个文件, {size_mb:.1f} MB, 反斜杠条目 {bad} (须为 0)")

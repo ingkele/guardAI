@@ -20,8 +20,11 @@ jobs:
         run: |
           curl -fsSL -o "$RUNNER_TEMP/guardai.zip" https://github.com/ingkele/guardAI/releases/latest/download/guardAI-linux-x64.zip
           unzip -q "$RUNNER_TEMP/guardai.zip" -d "$RUNNER_TEMP/guardai"
-          chmod +x "$RUNNER_TEMP/guardai/linux-x64/GuardAI.Cli"
-          sudo ln -sf "$RUNNER_TEMP/guardai/linux-x64/GuardAI.Cli" /usr/local/bin/guardAI
+          # 防御式定位二进制：兼容条目带/不带顶层目录两种 zip 结构
+          BIN="$(find "$RUNNER_TEMP/guardai" -type f -name 'GuardAI.Cli' | head -n 1)"
+          if [ -z "$BIN" ]; then echo "::error::GuardAI.Cli not found after unzip"; exit 1; fi
+          chmod +x "$BIN"
+          sudo ln -sf "$BIN" /usr/local/bin/guardAI
 
       - name: 规范守卫
         run: guardAI check --repo . --mode all --trigger ci

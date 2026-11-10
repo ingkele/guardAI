@@ -10,5 +10,8 @@
   goals: |
     curl -fsSL -o /tmp/guardai.zip https://github.com/ingkele/guardAI/releases/latest/download/guardAI-linux-x64.zip
     unzip -q /tmp/guardai.zip -d /tmp/guardai
-    chmod +x /tmp/guardai/linux-x64/GuardAI.Cli
-    /tmp/guardai/linux-x64/GuardAI.Cli check --repo . --mode all --trigger ci
+    # 防御式定位二进制：兼容条目带/不带顶层目录两种 zip 结构
+    BIN="$(find /tmp/guardai -type f -name 'GuardAI.Cli' | head -n 1)"
+    test -n "$BIN" || { echo "GuardAI.Cli not found after unzip"; exit 1; }
+    chmod +x "$BIN"
+    "$BIN" check --repo . --mode all --trigger ci
