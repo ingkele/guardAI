@@ -60,8 +60,15 @@ public abstract class CodeScanCheckBase : IGuardCheck
     protected abstract void ScanFile(string rel, string text, List<Violation> violations);
 
     /// <summary>
-    /// 判断是否测试代码（按惯例豁免：tests/test 目录段、*.Tests/*.Test 项目段、*Tests.cs/*Test.cs 文件名）。
+    /// 判断是否测试代码（按惯例豁免：tests/test 目录段、*.Tests/*.Test/*.UnitTests/*.UnitTest 项目段、
+    /// 裸 UnitTests/UnitTest 目录段、*Tests.cs/*Test.cs 文件名）。
     /// </summary>
+    /// <remarks>
+    /// 命名惯例补漏（2026-11-14）：VS / xUnit 模板生成的测试项目常叫 Xxx.UnitTests，
+    /// 其默认文件名 UnitTest1.cs 既不以 Tests.cs / Test.cs 结尾，段名也没有点前缀，
+    /// 早期只认 ".Tests" 会把整个测试项目当生产代码（WitchC 回归实测多出 79 条违规）。
+    /// 只按明确的段名枚举，不放宽成 EndsWith("Tests")——Contests 之类目录会被误豁免（零误报优先）。
+    /// </remarks>
     /// <param name="rel">仓库相对路径（正斜杠）。</param>
     /// <returns>是否测试代码（误判为测试=漏报方向，可接受）。</returns>
     protected static bool IsTestCode(string rel)
@@ -70,8 +77,12 @@ public abstract class CodeScanCheckBase : IGuardCheck
         {
             if (segment.Equals("tests", StringComparison.OrdinalIgnoreCase)
                 || segment.Equals("test", StringComparison.OrdinalIgnoreCase)
+                || segment.Equals("UnitTests", StringComparison.OrdinalIgnoreCase)
+                || segment.Equals("UnitTest", StringComparison.OrdinalIgnoreCase)
                 || segment.EndsWith(".Tests", StringComparison.OrdinalIgnoreCase)
-                || segment.EndsWith(".Test", StringComparison.OrdinalIgnoreCase))
+                || segment.EndsWith(".Test", StringComparison.OrdinalIgnoreCase)
+                || segment.EndsWith(".UnitTests", StringComparison.OrdinalIgnoreCase)
+                || segment.EndsWith(".UnitTest", StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }

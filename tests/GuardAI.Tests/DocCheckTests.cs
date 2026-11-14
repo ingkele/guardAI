@@ -196,12 +196,19 @@ public class DocCheckTests
         Assert.Empty(result.Violations);
     }
 
-    [Fact]
-    public void 测试代码_豁免()
+    [Theory]
+    [InlineData("tests/App/Foo.cs")]
+    [InlineData("test/App/Foo.cs")]
+    [InlineData("src/App/BarTests.cs")]
+    [InlineData("src/App.Tests/Foo.cs")]
+    [InlineData("src/WitchC.RBAC.UnitTests/UnitTest1.cs")] // WitchC 回归实测：段名无点前缀 + 模板文件名，曾多报 79 条
+    [InlineData("src/WitchC.RBAC.UnitTest/UnitTest1.cs")]
+    [InlineData("UnitTests/UnitTest1.cs")]
+    [InlineData("UnitTest/UnitTest1.cs")]
+    public void 测试代码_豁免(string rel)
     {
         using var fixture = new TempRepoFixture();
-        fixture.AddFile("tests/App/Foo.cs", "namespace Demo;\n\npublic class Foo\n{\n}\n");
-        fixture.AddFile("src/App/BarTests.cs", "namespace Demo;\n\npublic class Bar\n{\n}\n");
+        fixture.AddFile(rel, "namespace Demo;\n\npublic class Foo\n{\n}\n");
 
         var result = Run(fixture.Path);
 

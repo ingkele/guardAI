@@ -145,10 +145,13 @@ public class CapabilityIndexTests : IDisposable
     public void 默认排除测试代码且不误伤普通文件()
     {
         // v0.3.1-③：测试方法混入能力清单会误导复用；*Tests.cs 复数后缀不误伤 Contest.cs（只漏不误）
+        // 2026-11-14 补漏锁定：Xxx.UnitTests 段由 **/*Tests/** 排除（glob 的 * 吞掉 Xxx.Unit），
+        // 与 CodeScanCheckBase.IsTestCode 的段名枚举口径不同，两处都要覆盖真实回归样本路径
         WriteFile("src/Demo/Keep.cs", "public class Keep\n{\n    public void Save()\n    {\n    }\n}\n");
         WriteFile("tests/Demo/StorageTests.cs", "public class StorageTests\n{\n    public void Upload()\n    {\n    }\n}\n");
         WriteFile("src/Demo/HelperTests.cs", "public class HelperTests\n{\n    public void Parse()\n    {\n    }\n}\n");
         WriteFile("src/Demo/Contest.cs", "public class Contest\n{\n    public void Match()\n    {\n    }\n}\n");
+        WriteFile("src/WitchC.RBAC.UnitTests/UnitTest1.cs", "public class UnitTest1\n{\n    public void TestMethod1()\n    {\n    }\n}\n");
 
         var index = CapabilityIndex.Build(_repo);
 
