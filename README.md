@@ -2,7 +2,7 @@
 
 > 确定性引擎裁判合规，AI 只做装配。让任何项目在 10 分钟内接入"结构级 + 资产级"规范门禁。
 
-**当前版本**：v0.6.1 · **分发**：win-x64 / linux-x64 自包含单文件（零运行时依赖）· **开发**：.NET 10 · **单测**：317
+**当前版本**：v0.6.3 · **分发**：win-x64 / linux-x64 自包含单文件（零运行时依赖）· **开发**：.NET 10 · **单测**：324
 
 ## 它解决什么
 
@@ -170,7 +170,7 @@ src/GuardAI.Init      装配器（扫描、配置生成、闸口安装）
 src/GuardAI.Cli       单入口命令行
 config/presets        语言预设（规则资产）
 templates             闸口模板（CI / hook / AGENTS 片段）
-tests/GuardAI.Tests   xUnit 单测（317 用例）
+tests/GuardAI.Tests   xUnit 单测（324 用例）
 docs/cases            案例库（50 案例 / 39 规则）
 ```
 
@@ -180,10 +180,11 @@ docs/cases            案例库（50 案例 / 39 规则）
 
 | 场景 | 结果 |
 |---|---|
-| 全量单测 | ✅ 317/317 |
+| 全量单测 | ✅ 324/324 |
 | 自举：guardAI 检查自身仓库 | ✅ 六模块全过 0 违规（structure / duplicate / secret / doc / sql / perf；特征描述/假密钥夹具走 exclusions 豁免） |
 | 违规现场（DemoShop 实测） | ✅ 5 处全抓，退出码 1 |
 | 多语言冒烟（Java 真重复） | ✅ 100% 相似 3 处全逮，存量债首跑收编不轰炸 |
+| 测试项目豁免（WitchC.RBAC.UnitTests 回归） | ✅ 修复前 79 条误报 → 修复后 0 |
 
 ## 设计原则
 
@@ -192,4 +193,4 @@ docs/cases            案例库（50 案例 / 39 规则）
 
 ## 路线图
 
-P1 核心引擎 + `init` ✅ → P2 MCP + 误报治理 + 台账 ✅ → P3 重复检测 + 能力清单 ✅ → P4 多语言 + 三步 AI 层（`review` / `init --ai` / `learn`）✅（v0.5.0）→ help 体系 + 钩子根治 + AI 触发项（v0.5.1）→ 代码级四检查器（secret / doc / sql / perf）+ prompt 包 v3（v0.6.0）→ P5 线上轻量版 + 前端规则
+P1 核心引擎 + `init` ✅ → P2 MCP + 误报治理 + 台账 ✅ → P3 重复检测 + 能力清单 ✅ → P4 多语言 + 三步 AI 层（`review` / `init --ai` / `learn`）✅（v0.5.0）→ help 体系 + 钩子根治 + AI 触发项（v0.5.1）→ 代码级四检查器（secret / doc / sql / perf）+ prompt 包 v3（v0.6.0）→ 分发链路与文档补齐（v0.6.1 / v0.6.2）→ 测试代码豁免补漏 `*.UnitTests`（v0.6.3）→ P5 线上轻量版 + 前端规则
