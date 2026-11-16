@@ -3,14 +3,14 @@ name: guardai-search
 description: guardAI 写码前强制检索与复检门禁。当要新增任何类/方法/工具函数、实现文件上传/发短信/取令牌等常见功能、或收到 guardAI 检查违规时使用：先查能力清单复用已有实现，改完跑 guardAI check 复检到 0 违规。触发词：写个方法、新建类、工具类、实现上传、guardAI、复检、重复造轮子。
 ---
 
-<!-- guardai-directive-version: 3 -->
+<!-- guardai-directive-version: 4 -->
 # guardAI 写码前检索门禁
 
 本项目接入了 guardAI 规范门禁，写码必须遵守：
 
-1. **写码前强制检索**：新增任何类/方法/工具函数之前，必须先查项目能力清单，确认没有已有实现：
-   - 调用 guardAI MCP 的 `search_capability` 工具（query=关键词，如「上传」「Upload」「GetToken」）；
-   - 未接 MCP：执行 `guardAI search <关键词>`（能力清单缺失会自动现生成）。
+1. **写码前强制检索 + 查层契约**：新增任何类/方法/工具函数之前，必须先查项目能力清单，确认没有已有实现；写文件前还要查目标路径所属层与允许依赖方向：
+   - 调用 guardAI MCP 的 `search_capability` 工具（query=关键词，如「上传」「Upload」「GetToken」）+ `get_layer_contract` 工具（path=目标文件相对路径）；
+   - 未接 MCP：执行 `guardAI search <关键词>`（能力清单缺失会自动现生成），并看 `guardai.yml` 的 `layers` / `allowed_dependencies` 段。
    - 命中已有能力 → 优先复用/扩展已有实现，禁止换皮重写（只改名/改常量照样被近似重复检测逮住）；重复副本必行为漂移（校验缺失、口径分叉），代价不是多几行代码；
    - 确无命中才允许新建，且新方法应归入已有职责类，不要碎片化。
 2. **禁止自建目录**：`utils2` / `helpers` / `common` / `shared` 等野目录一律不许创建；新文件必须放进 `guardai.yml` 的 `allowed_dirs` 既定目录（每条带用途说明）。

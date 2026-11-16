@@ -1,7 +1,14 @@
 # guardAI AI 工具 hook（由 guardAI init 生成）
-# on_failure = "block" 表示不修完不许继续——坏先例当轮掐死。
+# PreToolUse：写之前拦「往哪写」（禁用目录/落位）+ 注入「能依赖谁」的层契约上下文。
+# PostToolUse：写之后当轮拦「写了什么」（内容级层依赖），on_failure = "block" 不修完不放行。
+[[hooks]]
+event = "PreToolUse"
+command = "{{GUARDAI_CMD}} gate --stdin"
+timeout_ms = 10000
+on_failure = "block"
+
 [[hooks]]
 event = "PostToolUse"
-command = "guardAI check --repo . --mode changed --trigger hook"
+command = "{{GUARDAI_CMD}} check --repo . --mode changed --trigger hook"
 timeout_ms = 30000
 on_failure = "block"

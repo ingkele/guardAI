@@ -118,6 +118,38 @@ exclusions:
   - path: docs/cases/raw/**
     reason: 历史 AI 审查原始存档（含引用的假密钥片段），只读不改写
 
+# 层契约（S1 dogfood）：按 guardAI 自身五个项目的真实依赖方向声明
+# 层归属用 glob 顺序命中；未命中任何层的文件（tests/docs/templates）整文件跳过
+layers:
+  - name: Core
+    path: "src/GuardAI.Core/**"
+    purpose: 内核底座——配置/引擎/台账，不依赖任何兄弟模块
+  - name: Checks
+    path: "src/GuardAI.Checks/**"
+    purpose: 检查器——依赖 Core，不反向依赖 AI/Init/Cli
+  - name: AI
+    path: "src/GuardAI.AI/**"
+    purpose: AI 层——模型接入与语义审查，依赖 Core
+  - name: Init
+    path: "src/GuardAI.Init/**"
+    purpose: 装配层——依赖 AI + Core，不依赖 Cli
+  - name: Cli
+    path: "src/GuardAI.Cli/**"
+    purpose: 入口层——依赖全部模块，不被任何模块反向依赖
+
+# 允许的依赖方向（from → to，未列出即禁止）；写码前 MCP get_layer_contract 会读这段注入边界
+allowed_dependencies:
+  - from: Core
+    to: []
+  - from: Checks
+    to: [Core]
+  - from: AI
+    to: [Core]
+  - from: Init
+    to: [AI, Core]
+  - from: Cli
+    to: [Core, Checks, AI, Init]
+
 # AI 语义审查（guardAI review）：大模型接入配置
 # 密钥放环境变量不落配置：api_key_env 指定环境变量名
 ai:

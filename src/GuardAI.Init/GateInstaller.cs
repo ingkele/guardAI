@@ -211,7 +211,8 @@ public sealed class GateInstaller
     /// </summary>
     private static GateInstallResult ApplyAppend(string target, GateInstallAction action, string templatePath)
     {
-        var content = File.ReadAllText(templatePath);
+        // 命令占位符渲染为实际调用命令（Codex hook 同样不依赖 PATH）
+        var content = GuardAiCommand.Render(File.ReadAllText(templatePath));
         if (!File.Exists(target))
         {
             Directory.CreateDirectory(Path.GetDirectoryName(target)!);
@@ -257,6 +258,11 @@ public sealed class GateInstaller
     /// <summary>
     /// 合并 JSON hook 配置（只增不改；解析失败时输出片段供人工合并）。
     /// </summary>
+    /// <remarks>
+    /// 双事件段：PreToolUse（写前拦路径 + 注入层契约）与 PostToolUse（写后当轮拦内容）分别合并。
+    /// 命令占位符在安装时渲染为实际调用命令（exe 绝对路径）——钩子不依赖 PATH。
+    /// 去重按「事件段 + 命令特征」判定，旧版只装 PostToolUse 的配置升级时会补装 PreToolUse。
+    /// </remarks>
     private static GateInstallResult ApplyMergeJson(string target, GateInstallAction action, string templatePath, bool force)
     {
         var templateText = File.ReadAllText(templatePath);
@@ -270,29 +276,36 @@ public sealed class GateInstaller
                 root = new JsonObject();
             }
 
-            var snippet = JsonNode.Parse(templateText) as JsonObject;
-            var entries = snippet?["hooks"]?["PostToolUse"] as JsonArray;
-            if (entries is null)
+            var snippet = JsonNode.Parse(GuardAiCommand.Render(templateText)) as JsonObject;
+            if (snippet?["hooks"] is not JsonObject snippetHooks)
             {
                 return new GateInstallResult(action.TargetRelativePath, false, "模板结构不符，跳过");
             }
 
             var hooks = root["hooks"] as JsonObject ?? new JsonObject();
             root["hooks"] = hooks;
-            var post = hooks["PostToolUse"] as JsonArray ?? new JsonArray();
-            hooks["PostToolUse"] = post;
 
             var changed = false;
-            foreach (var entry in entries)
+            foreach (var eventName in new[] { "PreToolUse", "PostToolUse" })
             {
-                var text = entry?.ToJsonString() ?? string.Empty;
-                if (post.Any(x => (x?.ToJsonString() ?? string.Empty).Contains("guardAI", StringComparison.Ordinal)))
+                if (snippetHooks[eventName] is not JsonArray entries || entries.Count == 0)
                 {
                     continue;
                 }
 
-                post.Add(entry?.DeepClone());
-                changed = true;
+                var bucket = hooks[eventName] as JsonArray ?? new JsonArray();
+                hooks[eventName] = bucket;
+                var commandMarker = eventName == "PreToolUse" ? "gate --stdin" : "check --repo";
+                if (bucket.Any(x => (x?.ToJsonString() ?? string.Empty).Contains(commandMarker, StringComparison.OrdinalIgnoreCase)))
+                {
+                    continue; // 该事件段已装过 guardAI hook，跳过（旧版升级时只补缺失的段）
+                }
+
+                foreach (var entry in entries)
+                {
+                    bucket.Add(entry?.DeepClone());
+                    changed = true;
+                }
             }
 
             if (!changed)
@@ -307,7 +320,7 @@ public sealed class GateInstaller
         catch (System.Text.Json.JsonException)
         {
             var snippetPath = target + ".guardai-snippet.json";
-            File.WriteAllText(snippetPath, templateText);
+            File.WriteAllText(snippetPath, GuardAiCommand.Render(templateText));
             return new GateInstallResult(action.TargetRelativePath, false, $"原文件不是合法 JSON，片段已输出到 {Path.GetFileName(snippetPath)} 供人工合并");
         }
     }

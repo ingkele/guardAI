@@ -157,6 +157,28 @@ public static class ConfigGenerator
             }
         }
 
+        // 层契约骨架（S1）：只按实测目录推断「哪些路径属于哪层」，不猜依赖方向——
+        // 方向猜错会让整个存量仓库首跑就炸，违背零误报铁律，故只给注释示例交人工确认。
+        var layers = Layers(scan).ToList();
+        if (layers.Count > 0)
+        {
+            sb.AppendLine();
+            sb.AppendLine("# 层契约：init 按实测目录推断层归属（顺序即优先级，靠前优先命中）");
+            sb.AppendLine("# allowed_dependencies 留空 = 依赖方向检查不启用；请人工确认后再填，别让 AI 猜方向");
+            sb.AppendLine("layers:");
+            foreach (var (name, path, purpose) in layers)
+            {
+                sb.AppendLine($"  - name: {name}");
+                sb.AppendLine($"    path: \"{path}\"");
+                sb.AppendLine($"    purpose: {purpose}");
+            }
+
+            sb.AppendLine("# 示例（人工确认后取消注释并填写真实方向）：");
+            sb.AppendLine("# allowed_dependencies:");
+            sb.AppendLine("#   - from: Web");
+            sb.AppendLine("#     to: [Application]");
+        }
+
         // 重复检测（P3）：目前语法适配器只做 C#，非 .NET 生态不出这段（出了也不生效）
         if (scan.Kind == ProjectKind.DotNet)
         {
@@ -279,6 +301,35 @@ public static class ConfigGenerator
         yield return ("src/*/Web/**", "表现层-嵌套分层");
         yield return ("tests/**", "测试项目");
         yield return ("docs/**", "文档");
+    }
+
+    /// <summary>
+    /// 层契约骨架：从 init 实测目录里找出明确的分层项目段（Domain/Application/Infrastructure/Web），
+    /// 只产出层归属，不产出任何依赖方向。
+    /// </summary>
+    /// <param name="scan">项目扫描结果。</param>
+    /// <returns>（层名，路径模式，用途说明）列表。</returns>
+    private static IEnumerable<(string Name, string Path, string Purpose)> Layers(ProjectScanResult scan)
+    {
+        string[] knownLayers = ["Domain", "Application", "Infrastructure", "Web"];
+        var emitted = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var dir in scan.KnownDirectories)
+        {
+            var segment = dir.Split('/')[^1];
+            foreach (var layer in knownLayers)
+            {
+                if (emitted.Contains(layer)
+                    || !(segment.Equals(layer, StringComparison.OrdinalIgnoreCase)
+                        || segment.EndsWith("." + layer, StringComparison.OrdinalIgnoreCase)))
+                {
+                    continue;
+                }
+
+                emitted.Add(layer);
+                yield return (layer, dir + "/**", $"{layer} 层（init 实测目录推断，可人工改）");
+                break;
+            }
+        }
     }
 
     /// <summary>

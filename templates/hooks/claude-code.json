@@ -1,12 +1,23 @@
 {
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{GUARDAI_CMD}} gate --stdin"
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Write|Edit",
         "hooks": [
           {
             "type": "command",
-            "command": "guardAI check --repo . --mode changed --trigger hook"
+            "command": "{{GUARDAI_CMD}} check --repo . --mode changed --trigger hook"
           }
         ]
       }

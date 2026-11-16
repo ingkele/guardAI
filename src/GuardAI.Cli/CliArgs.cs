@@ -35,6 +35,7 @@ internal static class CliArgs
             ["mcp"] = Table(("repo", true)),
             ["index"] = Table(("repo", true), ("output", true)),
             ["search"] = Table(("repo", true), ("top", true)),
+            ["gate"] = Table(("stdin", false)),
         };
 
     /// <summary>

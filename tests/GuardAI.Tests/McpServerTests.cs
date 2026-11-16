@@ -38,15 +38,25 @@ public class McpServerTests : IDisposable
     }
 
     [Fact]
-    public void ToolsList返回四工具()
+    public void ToolsList返回五工具()
     {
         var response = Call("""{"jsonrpc":"2.0","id":2,"method":"tools/list"}""");
 
         var tools = response!["result"]!["tools"]!.AsArray();
         var names = tools.Select(t => t!["name"]!.GetValue<string>()).ToArray();
-        Assert.Equal(["scan_project", "generate_config", "get_report", "search_capability"], names);
+        Assert.Equal(["scan_project", "generate_config", "get_report", "search_capability", "get_layer_contract"], names);
         // 每个工具都带 JSON Schema 入参定义
         Assert.All(tools, t => Assert.Equal("object", t!["inputSchema"]!["type"]!.GetValue<string>()));
+    }
+
+    [Fact]
+    public void Initialize指令包含写前先问层契约()
+    {
+        var response = Call("""{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}""");
+
+        var instructions = response!["result"]!["instructions"]!.GetValue<string>();
+        Assert.Contains("get_layer_contract", instructions);
+        Assert.Contains("写之前", instructions);
     }
 
     [Fact]
@@ -244,6 +254,70 @@ public class McpServerTests : IDisposable
         var text = CallTool("search_capability", new JsonObject { ["query"] = "Upload", ["top"] = 1 });
 
         Assert.Contains("命中 1 个", text);
+    }
+
+    // ---------- 工具五：写前层契约查询 ----------
+
+    [Fact]
+    public void GetLayerContract返回层名与允许禁止依赖()
+    {
+        WriteLayerConfig();
+
+        var text = CallTool("get_layer_contract", new JsonObject
+        {
+            ["path"] = "src/Demo.Web/Controllers/OrderController.cs",
+        });
+        var result = JsonNode.Parse(text)!;
+
+        Assert.Equal("Web", result["layer"]!["name"]!.GetValue<string>());
+        Assert.Equal(["Application"], result["allowedDependencies"]!.AsArray().Select(n => n!.GetValue<string>()));
+        Assert.Contains("Infrastructure", result["forbiddenDependencies"]!.AsArray().Select(n => n!.GetValue<string>()));
+        Assert.Contains("收口", result["suggestion"]!.GetValue<string>());
+    }
+
+    [Fact]
+    public void GetLayerContract未知路径返回未命中说明()
+    {
+        WriteLayerConfig();
+
+        var text = CallTool("get_layer_contract", new JsonObject { ["path"] = "extras/FeatureFlag.cs" });
+        var result = JsonNode.Parse(text)!;
+
+        Assert.Null(result["layer"]);
+        Assert.Contains("未命中", result["message"]!.GetValue<string>());
+    }
+
+    [Fact]
+    public void GetLayerContract缺路径按工具错误返回()
+    {
+        WriteLayerConfig();
+
+        AssertToolError("get_layer_contract", new JsonObject(), "缺少 path");
+    }
+
+    /// <summary>写一份带层契约的 guardai.yml（最小配置，不依赖 init 生成器）。</summary>
+    private void WriteLayerConfig()
+    {
+        File.WriteAllText(Path.Combine(_repo, "guardai.yml"), """
+            version: 1
+            layers:
+              - name: Web
+                path: "src/Demo.Web/**"
+                purpose: 接口层
+              - name: Application
+                path: "src/Demo.Application/**"
+                purpose: 应用层
+              - name: Infrastructure
+                path: "src/Demo.Infrastructure/**"
+                purpose: 基础设施层
+            allowed_dependencies:
+              - from: Web
+                to: [Application]
+              - from: Application
+                to: []
+              - from: Infrastructure
+                to: [Application]
+            """);
     }
 
     // ---------- 夹具与断言辅助 ----------

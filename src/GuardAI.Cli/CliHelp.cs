@@ -37,7 +37,7 @@ internal static class CliHelp
     {
         new(
             "check",
-            "guardAI check [--repo <路径>] [--mode changed|all] [--only structure|duplicate|secret|doc|sql|perf|all]{nl}" +
+            "guardAI check [--repo <路径>] [--mode changed|all] [--only structure|duplicate|secret|doc|sql|perf|layer|all]{nl}" +
             "              [--config <文件>] [--report <文件>] [--html <文件>] [--json]{nl}" +
             "              [--trigger cli|hook|ci] [--no-record] [--update-baseline] [--strict]",
             "执行检查（0=通过 / 1=违规 / 2=配置或环境错误），结果自动记入台账。{nl}" +
@@ -102,8 +102,14 @@ internal static class CliHelp
         new(
             "mcp",
             "guardAI mcp [--repo <路径>]",
-            "启动 MCP server（stdio）：给 AI 客户端搬运 scan_project / generate_config / get_report / search_capability 四工具。",
+            "启动 MCP server（stdio）：给 AI 客户端搬运 scan_project / generate_config / get_report / search_capability / get_layer_contract 五工具。",
             new[] { "guardAI mcp --repo D:\\项目          # 作为 MCP server 被 AI 客户端拉起" }),
+        new(
+            "gate",
+            "guardAI gate --stdin",
+            "写码前前置门（由 hook 调用）：从 stdin 读 hook JSON，stdout 输出 allow/deny 决策 + 层契约上下文。{nl}" +
+            "拦「往哪写」（禁用目录/落位），告知「能依赖谁」；写入内容由 PostToolUse 的 layer 检查当轮兜底。",
+            new[] { "echo '<hook json>' | guardAI gate --stdin   # 一般无需手调，init 装好 hook 后自动触发" }),
         new(
             "index",
             "guardAI index [--repo <路径>] [--output <文件>]",

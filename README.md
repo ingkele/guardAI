@@ -2,7 +2,7 @@
 
 > 确定性引擎裁判合规，AI 只做装配。让任何项目在 10 分钟内接入"结构级 + 资产级"规范门禁。
 
-**当前版本**：v0.6.3 · **分发**：win-x64 / linux-x64 自包含单文件（零运行时依赖）· **开发**：.NET 10 · **单测**：324
+**当前版本**：v0.6.4-SNAPSHOT（S1+S2 层契约与写前前置门，未发版）· **分发**：win-x64 / linux-x64 自包含单文件（零运行时依赖）· **开发**：.NET 10 · **单测**：389
 
 ## 它解决什么
 
@@ -16,7 +16,7 @@ guardAI 管"结构级 + 资产级"规范门禁，并做接入自动化（CI / pr
 
 ## 核心功能
 
-**六大检查器**（`guardAI check` 一条命令全跑，或 `--only <模块>` 单查）：
+**七大检查器**（`guardAI check` 一条命令全跑，或 `--only <模块>` 单查）：
 
 | 模块 | 查什么 | 抓什么 |
 |---|---|---|
@@ -26,6 +26,9 @@ guardAI 管"结构级 + 资产级"规范门禁，并做接入自动化（CI / pr
 | `doc` | 公共 API 文档注释 | public 类型 / 方法缺 `///` 摘要（`<inheritdoc />` 算有） |
 | `sql` | SQL 拼接构造 | 插值含洞 / 标识符拼接 / string.Format 拼 SQL（注入防线前置） |
 | `perf` | 数据访问性能 | 循环内查库 N+1、SELECT * 全列查询 |
+| `layer` | 层契约（层归属 + 依赖方向 + 实体暴露） | Web 直连 Infrastructure、上层穿透数据访问、出参直接返回持久化实体（`guardai.yml` 配 `layers` / `allowed_dependencies` 才启用，未配置即跳过） |
+
+**写码前前置门**：`guardai.yml` 声明 `layers` / `allowed_dependencies` 后，AI 写文件前可走两道门——MCP 工具 `get_layer_contract`（path → 所属层/允许依赖/禁止项，纯事实查询）与 `guardAI gate --stdin`（PreToolUse hook：拦禁用目录/落位越界 + 注入层契约上下文；写入内容由 PostToolUse 的 `layer` 检查当轮拦）。`init` 自动生成层归属骨架但**不猜依赖方向**（猜错即首跑误报）。
 
 **AI 层三步**（需 KEY）：`review` 语义审查（默认只报告，`--fail-on` 才拦截）→ `init --ai` AI 装配建议（确定性校验兜底，不冤枉存量）→ `learn` 规则发现员（审查素材提炼候选规则，人工确认后沉淀为规则资产）。
 
@@ -88,14 +91,15 @@ guardAI doctor --repo "D:\你的项目"               # 环境与配置自检（
 | `learn` | AI 规则发现员：审计审查素材，提炼候选规则（`--json` / `--report`） | 是 |
 | `ui` | 本地台账网页：审查记录 / AI hook 结论 / 闭环率 | 否 |
 | `doctor` | 环境与配置自检 | 否 |
-| `mcp` | MCP server：AI 客户端直调 `scan_project` / `generate_config` / `get_report` / `search_capability` | 否 |
+| `mcp` | MCP server：AI 客户端直调五工具（含 `get_layer_contract` 写前查层契约） | 否 |
+| `gate` | 写码前前置门：从 stdin 读 hook JSON，stdout 输出 allow/deny + 层契约上下文（由 init 装的 hook 自动调用） | 否 |
 | `index` / `search` | 能力清单生成 / 写码前强制检索（防重复造轮子） | 否 |
 
 **退出码（全命令统一）**：`0` 通过 / `1` 存在违规 / `2` 配置或环境错误——CI 与 hook 由此区分"拦下"与"跑挂了"。
 
 ## MCP 接入（AI 客户端直调）
 
-`guardAI mcp` 启动 stdio MCP server——AI 客户端（Claude Code / Cursor / WorkBuddy 等）不走 shell、直接工具调用 guardAI。四工具与 CLI **完全同源**（同一引擎，不出现两套口径）：
+`guardAI mcp` 启动 stdio MCP server——AI 客户端（Claude Code / Cursor / WorkBuddy 等）不走 shell、直接工具调用 guardAI。五工具与 CLI **完全同源**（同一引擎，不出现两套口径）：
 
 | MCP 工具 | 等价 CLI | 干什么 |
 |---|---|---|
@@ -103,6 +107,7 @@ guardAI doctor --repo "D:\你的项目"               # 环境与配置自检（
 | `scan_project` | `guardAI check --json` | 跑检查，返回违规 + 【给 AI 的修复指令】 |
 | `generate_config` | init 的配置生成段 | 产 guardai.yml YAML（不落盘，AI 提议、人来定） |
 | `get_report` | `guardAI ui` 的数据源 | 读台账闭环汇总（`.guard/records/`） |
+| `get_layer_contract` | `guardai.yml` 的 layers 段 | **写码前查层契约**：path → 所属层 / 允许依赖 / 禁止项，纯事实零判断、不写台账 |
 
 客户端配置示例（`command` 按实际路径，Linux 换成 `GuardAI.Cli`）：
 
@@ -170,7 +175,7 @@ src/GuardAI.Init      装配器（扫描、配置生成、闸口安装）
 src/GuardAI.Cli       单入口命令行
 config/presets        语言预设（规则资产）
 templates             闸口模板（CI / hook / AGENTS 片段）
-tests/GuardAI.Tests   xUnit 单测（324 用例）
+tests/GuardAI.Tests   xUnit 单测（389 用例）
 docs/cases            案例库（50 案例 / 39 规则）
 ```
 
@@ -180,8 +185,8 @@ docs/cases            案例库（50 案例 / 39 规则）
 
 | 场景 | 结果 |
 |---|---|
-| 全量单测 | ✅ 324/324 |
-| 自举：guardAI 检查自身仓库 | ✅ 六模块全过 0 违规（structure / duplicate / secret / doc / sql / perf；特征描述/假密钥夹具走 exclusions 豁免） |
+| 全量单测 | ✅ 389/389 |
+| 自举：guardAI 检查自身仓库 | ✅ 七模块全过 0 违规（structure / duplicate / secret / doc / sql / perf / layer；layer 按自身五项目真实依赖方向 dogfood） |
 | 违规现场（DemoShop 实测） | ✅ 5 处全抓，退出码 1 |
 | 多语言冒烟（Java 真重复） | ✅ 100% 相似 3 处全逮，存量债首跑收编不轰炸 |
 | 测试项目豁免（WitchC.RBAC.UnitTests 回归） | ✅ 修复前 79 条误报 → 修复后 0 |
@@ -193,4 +198,4 @@ docs/cases            案例库（50 案例 / 39 规则）
 
 ## 路线图
 
-P1 核心引擎 + `init` ✅ → P2 MCP + 误报治理 + 台账 ✅ → P3 重复检测 + 能力清单 ✅ → P4 多语言 + 三步 AI 层（`review` / `init --ai` / `learn`）✅（v0.5.0）→ help 体系 + 钩子根治 + AI 触发项（v0.5.1）→ 代码级四检查器（secret / doc / sql / perf）+ prompt 包 v3（v0.6.0）→ 分发链路与文档补齐（v0.6.1 / v0.6.2）→ 测试代码豁免补漏 `*.UnitTests`（v0.6.3）→ P5 线上轻量版 + 前端规则
+P1 核心引擎 + `init` ✅ → P2 MCP + 误报治理 + 台账 ✅ → P3 重复检测 + 能力清单 ✅ → P4 多语言 + 三步 AI 层（`review` / `init --ai` / `learn`）✅（v0.5.0）→ help 体系 + 钩子根治 + AI 触发项（v0.5.1）→ 代码级四检查器（secret / doc / sql / perf）+ prompt 包 v3（v0.6.0）→ 分发链路与文档补齐（v0.6.1 / v0.6.2）→ 测试代码豁免补漏 `*.UnitTests`（v0.6.3）→ 层契约 + 写码前前置门 S1/S2（layer 第七检查器 + `get_layer_contract` + `gate --stdin`，未发版）→ P5 线上轻量版 + 前端规则

@@ -16,8 +16,9 @@ namespace GuardAI.Cli;
 /// <remarks>
 /// 产品铁律：引擎裁判，AI 装配——MCP 只做能力搬运，不做任何分析判断；
 /// 全程本地 stdio，不上传任何代码内容；零外部依赖（协议用 System.Text.Json 手写）。
-/// 四工具与 CLI 完全同源：scan_project 等价 check --json，generate_config 等价 init 的配置生成段，
-/// get_report 读台账闭环汇总（M5 的 .guard/records/），search_capability 等价 search（写码前强制检索）。
+/// 五工具与 CLI 完全同源：scan_project 等价 check --json，generate_config 等价 init 的配置生成段，
+/// get_report 读台账闭环汇总（M5 的 .guard/records/），search_capability 等价 search（写码前强制检索），
+/// get_layer_contract 在写码前告知目标路径所属层与允许依赖方向（纯事实查询，零 AI 判断）。
 /// </remarks>
 public static class McpServer
 {
@@ -142,7 +143,8 @@ public static class McpServer
                 ["version"] = typeof(McpServer).Assembly.GetName().Version?.ToString(3) ?? "1.0.0",
             },
             ["instructions"] = "guardAI 项目骨架守卫：引擎裁判，AI 装配。"
-                + "写新方法/新类之前先调 search_capability 查能力清单（命中必须复用，禁止换皮重写）；"
+                + "写代码之前先调 search_capability 查能力清单（命中必须复用，禁止换皮重写），"
+                + "并调 get_layer_contract 查目标路径所属层与允许依赖方向（写之前就遵守，别等写完被拦）；"
                 + "scan_project 跑结构检查（等价 guardAI check --json）；"
                 + "generate_config 生成规则配置 YAML（不落盘）；"
                 + "get_report 读台账闭环汇总。发现违规时按返回的修复指令逐条修复后复检。",
@@ -150,7 +152,7 @@ public static class McpServer
     }
 
     /// <summary>
-    /// tools/list 结果：四工具定义（名称、说明、入参 schema）。
+    /// tools/list 结果：五工具定义（名称、说明、入参 schema）。
     /// </summary>
     private static JsonObject ToolsListResult()
     {
@@ -219,6 +221,22 @@ public static class McpServer
                         ["required"] = new JsonArray { "query" },
                     },
                 },
+                new JsonObject
+                {
+                    ["name"] = "get_layer_contract",
+                    ["description"] = "写码前先问：查询目标文件所属层、该层允许依赖哪些层、禁止直连哪些层（纯事实查询，"
+                        + "零 AI 判断、不写台账）。写之前先调用，按返回的边界生成代码，别等写完后 layer 检查拦你。",
+                    ["inputSchema"] = new JsonObject
+                    {
+                        ["type"] = "object",
+                        ["properties"] = new JsonObject
+                        {
+                            ["path"] = new JsonObject { ["type"] = "string", ["description"] = "目标文件相对路径（如 src/MyApp.Web/Controllers/OrderController.cs）" },
+                            ["repo"] = new JsonObject { ["type"] = "string", ["description"] = "目标仓库路径（省略则用连接时指定的默认仓库）" },
+                        },
+                        ["required"] = new JsonArray { "path" },
+                    },
+                },
             },
         };
     }
@@ -243,7 +261,8 @@ public static class McpServer
             "generate_config" => GenerateConfig(repo),
             "get_report" => GetReport(repo),
             "search_capability" => SearchCapability(args, repo),
-            _ => throw new ToolException($"未知工具: {name}（可用：scan_project / generate_config / get_report / search_capability）"),
+            "get_layer_contract" => GetLayerContract(args, repo),
+            _ => throw new ToolException($"未知工具: {name}（可用：scan_project / generate_config / get_report / search_capability / get_layer_contract）"),
         };
 
         return new JsonObject
@@ -341,12 +360,7 @@ public static class McpServer
             recentRuns = recent,
         };
 
-        return JsonSerializer.Serialize(payload, new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-        });
+        return JsonSerializer.Serialize(payload, JsonTextOptions);
     }
 
     /// <summary>
@@ -397,6 +411,70 @@ public static class McpServer
 
         return writer.ToString();
     }
+
+    /// <summary>
+    /// 工具五：写码前层契约查询（路径 → 所属层 → 允许/禁止依赖，纯事实、不写台账）。
+    /// </summary>
+    /// <param name="args">工具入参（path：目标文件相对路径；repo 已由分发层解析）。</param>
+    /// <param name="repo">目标仓库路径。</param>
+    /// <returns>层契约 JSON 文本。</returns>
+    /// <exception cref="ToolException">缺少 path 或找不到规则配置时抛出。</exception>
+    private static string GetLayerContract(JsonObject? args, string repo)
+    {
+        var path = args?["path"]?.GetValue<string>();
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            throw new ToolException("get_layer_contract 缺少 path（目标文件相对路径）");
+        }
+
+        var config = StructureRuleConfigLoader.Load(FindConfig(repo));
+        var rel = path.Replace('\\', '/');
+        var layer = LayerResolver.Resolve(rel, config.Layers);
+        if (layer is null)
+        {
+            return JsonSerializer.Serialize(new
+            {
+                path = rel,
+                layer = (object?)null,
+                message = "该路径未命中任何已声明的层；层依赖检查将跳过此文件（首跑零误报）。",
+                configuredLayers = config.Layers.Select(l => l.Name).ToList(),
+            }, JsonTextOptions);
+        }
+
+        var allowed = config.AllowedDependencies
+            .Where(d => d.From.Equals(layer.Name, StringComparison.OrdinalIgnoreCase))
+            .SelectMany(d => d.To)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(n => n, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        var forbidden = config.Layers
+            .Select(l => l.Name)
+            .Where(n => !n.Equals(layer.Name, StringComparison.OrdinalIgnoreCase)
+                && !allowed.Contains(n, StringComparer.OrdinalIgnoreCase))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(n => n, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        return JsonSerializer.Serialize(new
+        {
+            path = rel,
+            layer = new { name = layer.Name, purpose = layer.Purpose },
+            allowedDependencies = allowed,
+            forbiddenDependencies = forbidden,
+            forbidDtoEntity = config.ForbidDtoEntity,
+            suggestion = $"在 {layer.Name} 层写代码时只允许依赖：{(allowed.Count == 0 ? "无（本层不依赖其他层）" : string.Join(" / ", allowed))}；"
+                + $"禁止直连：{(forbidden.Count == 0 ? "无" : string.Join(" / ", forbidden))}。"
+                + "用接口/服务收口跨层访问；写后 layer 检查会复核实际引用。",
+        }, JsonTextOptions);
+    }
+
+    /// <summary>JSON 输出选项：中文不转义，便于 AI 客户端直接读。</summary>
+    private static readonly JsonSerializerOptions JsonTextOptions = new()
+    {
+        WriteIndented = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+    };
 
     /// <summary>
     /// 解析工具入参里的 repo（省略时用默认仓库）。

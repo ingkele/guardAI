@@ -58,8 +58,9 @@ public static class AiAgentCatalog
     /// 当前指令块版本号（模板内容变更时 +1）。
     /// 无版本戳的旧块按 v0 计，init 装配时自动整块升级，无需人工手动换新。
     /// v3（2026-10-23）：补命名纪律/分层穿透/DTO 边界/魔法串四条 prompt 规则（learn 回放 91 发现人工筛落地）。
+    /// v4（2026-11-16）：层契约由 layer 检查器确定性执行（第 7/8 条不再是纯 prompt）；新增写前调 get_layer_contract。
     /// </summary>
-    public const int DirectiveVersion = 3;
+    public const int DirectiveVersion = 4;
 
     /// <summary>
     /// 解析文本中的指令块版本戳。

@@ -179,6 +179,44 @@ public class ConfigGeneratorTests
     }
 
     /// <summary>构造带实测基线的扫描结果（knownDirs 缺省时取顶层目录名）。</summary>
+    [Fact]
+    public void 分层项目生成层契约骨架但不猜依赖方向()
+    {
+        var scan = BuildScan(
+            topDirs: [] ,
+            knownDirs: ["src/Demo.Domain", "src/Demo.Application", "src/Demo.Infrastructure", "src/Demo.Web"]);
+
+        var yaml = ConfigGenerator.Generate(scan);
+        var config = StructureRuleConfigLoader.Parse(yaml, "guardai.yml");
+
+        Assert.Equal(4, config.Layers.Count);
+        Assert.Contains(config.Layers, l => l.Name == "Web" && l.Path == "src/Demo.Web/**");
+        // 铁律：init 只给层归属骨架，不猜 allowed_dependencies（猜错=首跑炸老仓库）
+        Assert.Empty(config.AllowedDependencies);
+        Assert.Contains("allowed_dependencies 留空", yaml);
+    }
+
+    [Fact]
+    public void 无分层目录时不生成层契约段()
+    {
+        var scan = BuildScan(topDirs: [], knownDirs: ["src", "src/Tools"]);
+
+        var config = StructureRuleConfigLoader.Parse(ConfigGenerator.Generate(scan), "guardai.yml");
+
+        Assert.Empty(config.Layers);
+    }
+
+    [Fact]
+    public void 同名分层目录只生成一条()
+    {
+        var scan = BuildScan(topDirs: [], knownDirs: ["src/A.Domain", "src/B.Domain", "src/A.Web"]);
+
+        var config = StructureRuleConfigLoader.Parse(ConfigGenerator.Generate(scan), "guardai.yml");
+
+        Assert.Single(config.Layers, l => l.Name == "Domain");
+        Assert.Equal(2, config.Layers.Count);
+    }
+
     private static ProjectScanResult BuildScan(
         IReadOnlyList<TopDirectoryInfo> topDirs,
         IReadOnlyList<string>? knownDirs = null,

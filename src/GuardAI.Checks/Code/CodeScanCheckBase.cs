@@ -18,8 +18,11 @@ namespace GuardAI.Checks.Code;
 /// </remarks>
 public abstract class CodeScanCheckBase : IGuardCheck
 {
-    /// <summary>参与扫描的扩展名（v1 仅 C#，多语言后续）。</summary>
+    /// <summary>默认参与扫描的扩展名（C#；多语言子类可 override <see cref="Extensions"/>）。</summary>
     private static readonly IReadOnlyList<string> CsExtensions = [".cs"];
+
+    /// <summary>参与扫描的扩展名；子类可覆盖（如 layer 检查覆盖六语言）。</summary>
+    protected virtual IReadOnlyList<string> Extensions => CsExtensions;
 
     /// <inheritdoc />
     public abstract string Name { get; }
@@ -27,7 +30,8 @@ public abstract class CodeScanCheckBase : IGuardCheck
     /// <inheritdoc />
     public CheckResult Run(CheckContext context)
     {
-        var files = TargetFileCollector.Collect(context.RepoPath, context.Mode, CsExtensions);
+        OnBeforeRun(context);
+        var files = TargetFileCollector.Collect(context.RepoPath, context.Mode, Extensions);
         var violations = new List<Violation>();
         foreach (var rel in files)
         {
@@ -52,6 +56,15 @@ public abstract class CodeScanCheckBase : IGuardCheck
     }
 
     /// <summary>
+    /// 扫描前钩子：子类需要整轮共享的配置在此缓存（如 layer 检查缓存层契约配置）。
+    /// 基类默认空实现，不影响 doc/sql/perf。
+    /// </summary>
+    /// <param name="context">检查上下文。</param>
+    protected virtual void OnBeforeRun(CheckContext context)
+    {
+    }
+
+    /// <summary>
     /// 逐文件扫描：子类实现各自的规则逻辑，命中即向 violations 追加。
     /// </summary>
     /// <param name="rel">仓库相对路径（正斜杠）。</param>
@@ -63,106 +76,16 @@ public abstract class CodeScanCheckBase : IGuardCheck
     /// 判断是否测试代码（按惯例豁免：tests/test 目录段、*.Tests/*.Test/*.UnitTests/*.UnitTest 项目段、
     /// 裸 UnitTests/UnitTest 目录段、*Tests.cs/*Test.cs 文件名）。
     /// </summary>
-    /// <remarks>
-    /// 命名惯例补漏（2026-11-14）：VS / xUnit 模板生成的测试项目常叫 Xxx.UnitTests，
-    /// 其默认文件名 UnitTest1.cs 既不以 Tests.cs / Test.cs 结尾，段名也没有点前缀，
-    /// 早期只认 ".Tests" 会把整个测试项目当生产代码（WitchC 回归实测多出 79 条违规）。
-    /// 只按明确的段名枚举，不放宽成 EndsWith("Tests")——Contests 之类目录会被误豁免（零误报优先）。
-    /// </remarks>
+    /// <remarks>实现上提到 <see cref="TestCodeDetector"/>（2026-11-16），与层契约检查共用一份判定。</remarks>
     /// <param name="rel">仓库相对路径（正斜杠）。</param>
     /// <returns>是否测试代码（误判为测试=漏报方向，可接受）。</returns>
-    protected static bool IsTestCode(string rel)
-    {
-        foreach (var segment in rel.Split('/'))
-        {
-            if (segment.Equals("tests", StringComparison.OrdinalIgnoreCase)
-                || segment.Equals("test", StringComparison.OrdinalIgnoreCase)
-                || segment.Equals("UnitTests", StringComparison.OrdinalIgnoreCase)
-                || segment.Equals("UnitTest", StringComparison.OrdinalIgnoreCase)
-                || segment.EndsWith(".Tests", StringComparison.OrdinalIgnoreCase)
-                || segment.EndsWith(".Test", StringComparison.OrdinalIgnoreCase)
-                || segment.EndsWith(".UnitTests", StringComparison.OrdinalIgnoreCase)
-                || segment.EndsWith(".UnitTest", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-        }
-
-        return rel.EndsWith("Tests.cs", StringComparison.OrdinalIgnoreCase)
-            || rel.EndsWith("Test.cs", StringComparison.OrdinalIgnoreCase);
-    }
+    protected static bool IsTestCode(string rel) => TestCodeDetector.IsTestCode(rel);
 
     /// <summary>
     /// 剥离行注释与块注释、保留字符串字面量（SQL/数据访问特征要看见字符串里的内容）。
     /// </summary>
+    /// <remarks>实现上提到 <see cref="SourceText.StripComments"/>（2026-11-16），与层契约检查共用一份行为。</remarks>
     /// <param name="text">源码全文。</param>
     /// <returns>剥离注释后的文本（行结构保持）。</returns>
-    protected static string StripComments(string text)
-    {
-        var sb = new StringBuilder(text.Length);
-        var i = 0;
-        var inString = false;
-        while (i < text.Length)
-        {
-            var c = text[i];
-            if (inString)
-            {
-                sb.Append(c);
-                if (c == '\\' && i + 1 < text.Length)
-                {
-                    sb.Append(text[i + 1]); // 字符串内转义字符（\" 等）原样保留，不误判串尾
-                    i += 2;
-                    continue;
-                }
-
-                if (c == '"')
-                {
-                    inString = false;
-                }
-
-                i++;
-                continue;
-            }
-
-            if (c == '"')
-            {
-                inString = true;
-                sb.Append(c);
-                i++;
-                continue;
-            }
-
-            if (c == '/' && i + 1 < text.Length && text[i + 1] == '/')
-            {
-                while (i < text.Length && text[i] != '\n')
-                {
-                    i++; // 行注释吃掉（换行保留行结构）
-                }
-
-                continue;
-            }
-
-            if (c == '/' && i + 1 < text.Length && text[i + 1] == '*')
-            {
-                i += 2;
-                while (i + 1 < text.Length && !(text[i] == '*' && text[i + 1] == '/'))
-                {
-                    if (text[i] == '\n')
-                    {
-                        sb.Append('\n'); // 块注释内的换行保留行号对齐
-                    }
-
-                    i++;
-                }
-
-                i = Math.Min(i + 2, text.Length);
-                continue;
-            }
-
-            sb.Append(c);
-            i++;
-        }
-
-        return sb.ToString();
-    }
+    protected static string StripComments(string text) => SourceText.StripComments(text);
 }

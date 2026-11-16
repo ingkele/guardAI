@@ -32,6 +32,21 @@ public sealed record ExclusionRule(string Path, string Reason);
 public sealed record ProjectTypeOverride(string Path, string ProjectType);
 
 /// <summary>
+/// 层定义：path 为 glob，顺序即优先级（靠前优先命中）。
+/// </summary>
+/// <param name="Name">层名称（依赖表的 from/to 引用此名）。</param>
+/// <param name="Path">该层文件的路径通配符模式。</param>
+/// <param name="Purpose">层的用途说明（前置门注入给 AI 的上下文）。</param>
+public sealed record LayerDef(string Name, string Path, string Purpose);
+
+/// <summary>
+/// 允许的依赖方向：from 层可依赖 to 列表中的层（未列出即禁止）。
+/// </summary>
+/// <param name="From">依赖发起层。</param>
+/// <param name="To">允许依赖的目标层集合。</param>
+public sealed record AllowedDependency(string From, IReadOnlyList<string> To);
+
+/// <summary>
 /// structure 检查的规则配置（规则资产，执行宿主可迁移）。
 /// </summary>
 /// <remarks>
@@ -77,6 +92,15 @@ public sealed class StructureRuleConfig
     /// 能力清单排除模式（capability.exclude）：null = 缺省测试模式，显式空列表 = 不排除任何文件。
     /// </summary>
     public IReadOnlyList<string>? CapabilityExclude { get; init; }
+
+    /// <summary>层契约定义（layers 段）；缺省空 = 不启用层检查，兼容旧仓库。</summary>
+    public IReadOnlyList<LayerDef> Layers { get; init; } = [];
+
+    /// <summary>允许的层依赖方向（allowed_dependencies 段）；缺省空 = 不启用方向检查。</summary>
+    public IReadOnlyList<AllowedDependency> AllowedDependencies { get; init; } = [];
+
+    /// <summary>Web / Application 层出参禁止暴露持久化实体（缺省 true）。</summary>
+    public bool ForbidDtoEntity { get; init; } = true;
 }
 
 /// <summary>
@@ -177,6 +201,8 @@ public static class StructureRuleConfigLoader
                 type));
         }
 
+        var layers = ParseLayers(root, configFileName);
+
         return new StructureRuleConfig
         {
             Version = root.TryGetValue("version", out var v) && v is int i ? i : 1,
@@ -189,6 +215,89 @@ public static class StructureRuleConfigLoader
             Exclusions = exclusions,
             Duplicates = ParseDuplicates(root, configFileName),
             CapabilityExclude = ParseCapabilityExclude(root, configFileName),
+            Layers = layers,
+            AllowedDependencies = ParseAllowedDependencies(root, layers, configFileName),
+            ForbidDtoEntity = ParseForbidDtoEntity(root, configFileName),
+        };
+    }
+
+    /// <summary>
+    /// 解析 layers 段：逐项取 name/path/purpose，name 非空且不重复（大小写不敏感）。
+    /// </summary>
+    private static IReadOnlyList<LayerDef> ParseLayers(IReadOnlyDictionary<string, object?> root, string configFileName)
+    {
+        var layers = new List<LayerDef>();
+        var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var e in AsList(root, "layers", configFileName))
+        {
+            var map = AsMap(e, "layers", configFileName);
+            var name = AsString(map.GetValueOrDefault("name")).Trim();
+            var path = AsString(map.GetValueOrDefault("path")).Trim();
+            if (name.Length == 0 || path.Length == 0)
+            {
+                throw new FormatException($"配置错误（{configFileName}）：'layers' 每项必须写明 name 和 path");
+            }
+
+            if (!names.Add(name))
+            {
+                throw new FormatException($"配置错误（{configFileName}）：'layers' 存在重复层名 '{name}'");
+            }
+
+            layers.Add(new LayerDef(name, path, AsString(map.GetValueOrDefault("purpose"))));
+        }
+
+        return layers;
+    }
+
+    /// <summary>
+    /// 解析 allowed_dependencies 段：from/to 必须是已定义层（fail-closed，防拼错静默放行）。
+    /// </summary>
+    private static IReadOnlyList<AllowedDependency> ParseAllowedDependencies(
+        IReadOnlyDictionary<string, object?> root, IReadOnlyList<LayerDef> layers, string configFileName)
+    {
+        var known = new HashSet<string>(layers.Select(l => l.Name), StringComparer.OrdinalIgnoreCase);
+        var result = new List<AllowedDependency>();
+        foreach (var e in AsList(root, "allowed_dependencies", configFileName))
+        {
+            var map = AsMap(e, "allowed_dependencies", configFileName);
+            var from = AsString(map.GetValueOrDefault("from")).Trim();
+            if (!known.Contains(from))
+            {
+                throw new FormatException($"配置错误（{configFileName}）：'allowed_dependencies.from' 引用未定义层 '{from}'");
+            }
+
+            var to = new List<string>();
+            foreach (var target in AsList(map, "to", configFileName))
+            {
+                var name = AsString(target).Trim();
+                if (!known.Contains(name))
+                {
+                    throw new FormatException($"配置错误（{configFileName}）：'allowed_dependencies.to' 引用未定义层 '{name}'");
+                }
+
+                to.Add(name);
+            }
+
+            result.Add(new AllowedDependency(from, to));
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// 解析 forbid_dto_entity 段（缺省 true）。
+    /// </summary>
+    private static bool ParseForbidDtoEntity(IReadOnlyDictionary<string, object?> root, string configFileName)
+    {
+        if (!root.TryGetValue("forbid_dto_entity", out var raw) || raw is null)
+        {
+            return true;
+        }
+
+        return raw switch
+        {
+            bool b => b,
+            var other => throw new FormatException($"配置错误（{configFileName}）：'forbid_dto_entity' 必须是 true/false，收到 '{other}'"),
         };
     }
 
