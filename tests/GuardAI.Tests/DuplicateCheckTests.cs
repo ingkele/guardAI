@@ -411,6 +411,192 @@ public class DuplicateCheckTests : IDisposable
         Assert.NotEmpty(Run().Violations);
     }
 
+    /// <summary>JSX 小布局组件（Row）——Issue #1 探针的被复制对象。</summary>
+    private const string JsxRow = """
+        export function Row({ label, children }: { label: string; children: React.ReactNode }) {
+          return (
+            <div className="flex flex-wrap items-center gap-3 py-2">
+              <span className="w-[86px] shrink-0 text-[11px] text-soft">{label}</span>
+              <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2.5">{children}</div>
+            </div>
+          );
+        }
+        """;
+
+    /// <summary>逐字复制 Row 结构的探针组件（Issue #1 增量探针实验）。</summary>
+    private const string JsxProbeRowCopy = """
+        export function ProbeRowCopy({ label, children }: { label: string; children: React.ReactNode }) {
+          return (
+            <div className="flex flex-wrap items-center gap-3 py-2">
+              <span className="w-[86px] shrink-0 text-[11px] text-soft">{label}</span>
+              <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2.5">{children}</div>
+            </div>
+          );
+        }
+        """;
+
+    /// <summary>整页布局组件（AuthShell）——与 Row 毫无血缘，纯 JSX 骨架相似。</summary>
+    private const string JsxAuthShell = """
+        export function AuthShell({ title, children, footer }) {
+          return (
+            <div className="flex min-h-screen items-center justify-center bg-canvas p-6">
+              <div className="flex w-full max-w-[880px] rounded-2xl border border-line bg-panel shadow-xl">
+                <aside className="hidden w-[360px] flex-col justify-between bg-brand-deep p-8 text-white md:flex">
+                  <div className="flex items-center gap-2">
+                    <Logo size={28} />
+                    <span className="text-lg font-semibold">Console</span>
+                  </div>
+                  <p className="text-xs text-white/50">© 2026</p>
+                </aside>
+                <main className="flex flex-1 flex-col justify-center p-10">
+                  <h1 className="text-xl font-semibold">{title}</h1>
+                  <div className="flex flex-col gap-4">{children}</div>
+                  <div className="flex flex-col gap-2 text-xs text-soft">{footer}</div>
+                </main>
+              </div>
+            </div>
+          );
+        }
+        """;
+
+    /// <summary>整页路由组件（DashboardPage）——同为 JSX 骨架，业务完全不同。</summary>
+    private const string JsxDashboardPage = """
+        export function DashboardPage() {
+          const { data, loading } = useDashboardQuery();
+          return (
+            <div className="flex h-full flex-col gap-4 p-6">
+              <header className="flex items-center justify-between border-b border-line pb-4">
+                <h1 className="text-xl font-semibold">工作台</h1>
+                <Button onClick={refresh}>刷新</Button>
+              </header>
+              <section className="grid grid-cols-4 gap-4">
+                {data.metrics.map((m) => (
+                  <MetricCard key={m.id} title={m.title} value={m.value} />
+                ))}
+              </section>
+              <footer className="flex items-center justify-between border-t border-line pt-3">
+                <span>更新于 {data.updatedAt}</span>
+                <Pagination current={data.page} total={data.total} />
+              </footer>
+            </div>
+          );
+        }
+        """;
+
+    [Fact]
+    public void JSX组件骨架互撞_近似通道豁免()
+    {
+        // Issue #1 复现：归一化把标签/属性名抹成 id，任意返回 JSX 的函数 token 流天然重叠——
+        // 结构相似 ≠ 语义重复，近似重复通道对 JSX 方法整体豁免（探针实验的 6 对全静默）
+        WriteFile("web/src/components/shared/row.tsx", JsxRow);
+        WriteFile("web/src/components/shared/auth-shell.tsx", JsxAuthShell);
+        WriteFile("web/src/routes/dashboard.tsx", JsxDashboardPage);
+        Assert.Empty(Run().Violations); // 首跑建基线
+
+        WriteFile("web/src/components/probe.tsx", JsxProbeRowCopy);
+        Assert.Empty(Run().Violations);
+        Assert.Empty(Run(strict: true).Violations); // 严格审计同样静默：骨架相似不判语义重复
+    }
+
+    [Fact]
+    public void JSX整组件逐字复制_按设计不报_只漏不误()
+    {
+        // 探针逐字复制 Row 结构也不报——JSX 骨架相似度不携带语义区分度，宁漏不误；
+        // 组件级重复的语义维度（props/职责/导出名）是后续 learn 候选，不在近似通道硬猜
+        WriteFile("web/src/components/shared/row.tsx", JsxRow);
+        Assert.Empty(Run().Violations);
+
+        WriteFile("web/src/components/probe.tsx", JsxProbeRowCopy);
+        Assert.Empty(Run().Violations);
+    }
+
+    [Fact]
+    public void JSX豁免不牵连CSharp换皮检测()
+    {
+        // 同一仓库里 JSX 豁免只对 JSX 方法生效：C# 换皮重写照样当场拦（门禁有效性）
+        WriteFile("src/A/FileStorage.cs", OriginalUpload);
+        WriteFile("web/src/components/shared/row.tsx", JsxRow);
+        WriteFile("web/src/components/probe.tsx", JsxProbeRowCopy);
+        Assert.Empty(Run().Violations); // 首跑建基线
+
+        WriteFile("src/Z/ImageStorage.cs", RewrittenUpload);
+        var violation = Assert.Single(Run().Violations);
+        Assert.Contains("近似重复", violation.Rule);
+        Assert.Contains("ImageStorage", violation.File);
+    }
+
+    [Fact]
+    public void JSX方法仍受高频方法名注册表约束()
+    {
+        // 近似通道豁免 JSX，但「又写一遍同名轮子」的名字通道保留
+        WriteFile("web/src/components/upload-avatar.tsx", """
+            export function UploadAvatar({ file }) {
+              return (
+                <div className="flex items-center gap-2">
+                  <Avatar src={file.url} />
+                  <span className="text-sm">{file.name}</span>
+                </div>
+              );
+            }
+            """);
+        Assert.Empty(Run().Violations);
+
+        WriteFile("web/src/components/upload-image.tsx", """
+            export function UploadImage({ image }) {
+              return (
+                <div className="flex items-center gap-2">
+                  <Avatar src={image.url} />
+                  <span className="text-sm">{image.name}</span>
+                </div>
+              );
+            }
+            """);
+        var violation = Assert.Single(Run().Violations);
+        Assert.Contains("高频方法名", violation.Rule);
+    }
+
+    [Fact]
+    public void CSharp泛型尖括号_不误判JSX()
+    {
+        // <string, int> 这类泛型尖括号不是 JSX 标记（无 </Tag> 闭合 / <Tag /> 自闭合）——
+        // 带泛型的 C# 换皮照报，防豁免口径放宽误伤
+        WriteFile("src/A/TagCounter.cs", """
+            namespace Demo;
+
+            public class TagCounter
+            {
+                public Dictionary<string, int> CountByTag(List<string> tags)
+                {
+                    var map = new Dictionary<string, int>();
+                    foreach (var tag in tags)
+                    {
+                        map[tag] = map.TryGetValue(tag, out var n) ? n + 1 : 1;
+                    }
+                    return map;
+                }
+            }
+            """);
+        Assert.Empty(Run().Violations);
+
+        WriteFile("src/Z/LabelTally.cs", """
+            namespace Demo;
+
+            public class LabelTally
+            {
+                public Dictionary<string, int> TallyByLabel(List<string> labels)
+                {
+                    var result = new Dictionary<string, int>();
+                    foreach (var label in labels)
+                    {
+                        result[label] = result.TryGetValue(label, out var c) ? c + 1 : 1;
+                    }
+                    return result;
+                }
+            }
+            """);
+        Assert.Single(Run().Violations);
+    }
+
     /// <summary>
     /// 构造检查上下文（extraYaml 为根级追加配置段，如 "duplicates:\n  threshold: 0.4\n"）。
     /// </summary>

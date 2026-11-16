@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-22T19:50:53.1442725+08:00",
+  "generatedAt": "2026-11-16T20:35:11.9901279+08:00",
   "pairs": [
     {
       "key": "5ce026ca78a616a5",
@@ -80,7 +80,17 @@
       "key": "d4c674c8f9e72010",
       "a": "LlmClientTests.openai协议_响应缺内容_抛LlmException@tests/GuardAI.Tests/LlmClientTests.cs",
       "b": "LlmClientTests.openai协议_HTTP错误_抛LlmException带状态码@tests/GuardAI.Tests/LlmClientTests.cs"
+    },
+    {
+      "key": "f712d778baba2f57",
+      "a": "DuplicateCheckTests.JSX整组件逐字复制_按设计不报_只漏不误@tests/GuardAI.Tests/DuplicateCheckTests.cs",
+      "b": "DuplicateCheckTests.JSX组件骨架互撞_近似通道豁免@tests/GuardAI.Tests/DuplicateCheckTests.cs"
+    },
+    {
+      "key": "07e823cf0e1139ec",
+      "a": "DuplicateCheckTests.JSX豁免不牵连CSharp换皮检测@tests/GuardAI.Tests/DuplicateCheckTests.cs",
+      "b": "DuplicateCheckTests.JSX整组件逐字复制_按设计不报_只漏不误@tests/GuardAI.Tests/DuplicateCheckTests.cs"
     }
   ],
-  "detectorVersion": 4
+  "detectorVersion": 5
 }

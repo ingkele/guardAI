@@ -221,6 +221,184 @@ public class PerfCheckTests
         Assert.Empty(result.Violations);
     }
 
+    [Fact]
+    public void 重试循环内单次写入_不报()
+    {
+        // Issue #1 复现：唯一键冲突的有界重试（for 计数循环 + 单次插入 + 异常分支修正）不是 N+1——
+        // N 来自集合元素数，计数/重试类循环整类不判（只漏不误）
+        using var fixture = new TempRepoFixture();
+        fixture.AddFile("src/App/RunEventStore.cs", """
+            namespace Demo;
+
+            public class RunEventStore
+            {
+                private readonly DbClient _db;
+                private const int MaxSequenceRetries = 3;
+
+                public RunEvent Append(RunEvent @event)
+                {
+                    var nextSequence = NextSequenceNo(@event.RunId);
+                    for (var attempt = 0; ; attempt++)
+                    {
+                        var entity = new RunEventEntity { RunId = @event.RunId, Sequence = nextSequence };
+                        try
+                        {
+                            _db.Insertable(entity).ExecuteCommand();
+                            return ToRunEvent(entity);
+                        }
+                        catch (MySqlException exception) when (exception.Number == 1062 && attempt < MaxSequenceRetries)
+                        {
+                            nextSequence++;
+                        }
+                    }
+                }
+            }
+            """);
+
+        var result = Run(fixture.Path);
+
+        Assert.Empty(result.Violations);
+    }
+
+    [Fact]
+    public void for计数重试循环内查询_也不报()
+    {
+        using var fixture = new TempRepoFixture();
+        fixture.AddFile("src/App/RetryQuery.cs", """
+            namespace Demo;
+
+            public class RetryQuery
+            {
+                public void Go()
+                {
+                    for (var attempt = 0; attempt < MaxSequenceRetries; attempt++)
+                    {
+                        var row = _db.Queryable<Job>().First(j => j.Id == id);
+                        if (row != null)
+                        {
+                            return;
+                        }
+                    }
+                }
+            }
+            """);
+
+        var result = Run(fixture.Path);
+
+        Assert.Empty(result.Violations);
+    }
+
+    [Fact]
+    public void foreach逐条写库_报逐条写库()
+    {
+        // 集合逐项写入（该批量插入的）仍在网里，报文分读写：写入不再套「典型 N+1」措辞
+        using var fixture = new TempRepoFixture();
+        fixture.AddFile("src/App/OrderWriter.cs", """
+            namespace Demo;
+
+            public class OrderWriter
+            {
+                public void Go()
+                {
+                    foreach (var o in orders)
+                    {
+                        _db.Insertable(o).ExecuteCommand();
+                    }
+                }
+            }
+            """);
+
+        var result = Run(fixture.Path);
+
+        var violation = Assert.Single(result.Violations);
+        Assert.Equal("循环内逐条写库", violation.Rule);
+        Assert.Contains("第 9 行", violation.Message);
+        Assert.Contains("批量", violation.Suggestion);
+    }
+
+    [Fact]
+    public void for带集合边界逐条查库_仍报N加1()
+    {
+        // for 只有条件引用集合规模（.Count/.Length）才算集合迭代——逐条查库照报
+        using var fixture = new TempRepoFixture();
+        fixture.AddFile("src/App/OrderQueryByIndex.cs", """
+            namespace Demo;
+
+            public class OrderQueryByIndex
+            {
+                public void Go()
+                {
+                    for (var i = 0; i < orders.Count; i++)
+                    {
+                        var user = _db.Queryable<User>().First(u => u.Id == orders[i].UserId);
+                    }
+                }
+            }
+            """);
+
+        var result = Run(fixture.Path);
+
+        var violation = Assert.Single(result.Violations);
+        Assert.Equal("循环内查库", violation.Rule);
+        Assert.Contains("N+1", violation.Message);
+    }
+
+    [Fact]
+    public void while迭代流内写库_报逐条写库()
+    {
+        // while 条件含 .Read()/.MoveNext() 是流式集合迭代——逐项写库照报
+        using var fixture = new TempRepoFixture();
+        fixture.AddFile("src/App/ReaderMigrator.cs", """
+            namespace Demo;
+
+            public class ReaderMigrator
+            {
+                public void Go()
+                {
+                    while (reader.Read())
+                    {
+                        _db.Insertable(Map(reader)).ExecuteCommand();
+                    }
+                }
+            }
+            """);
+
+        var result = Run(fixture.Path);
+
+        var violation = Assert.Single(result.Violations);
+        Assert.Equal("循环内逐条写库", violation.Rule);
+    }
+
+    [Fact]
+    public void WhileTrue轮询内数据访问_不报()
+    {
+        // 无集合驱动的条件/常真循环（轮询、重试）不判 N+1——不是「遍历集合逐条查库」
+        using var fixture = new TempRepoFixture();
+        fixture.AddFile("src/App/JobPoller.cs", """
+            namespace Demo;
+
+            public class JobPoller
+            {
+                public void Go()
+                {
+                    while (true)
+                    {
+                        var job = _db.Queryable<Job>().First(j => j.Status == "pending");
+                        if (job == null)
+                        {
+                            break;
+                        }
+                        Handle(job);
+                    }
+                }
+            }
+            """);
+
+        var result = Run(fixture.Path);
+
+        Assert.Empty(result.Violations);
+    }
+
     /// <summary>执行 perf 检查。</summary>
     private static CheckResult Run(string repoPath, StructureRuleConfig? config = null)
     {

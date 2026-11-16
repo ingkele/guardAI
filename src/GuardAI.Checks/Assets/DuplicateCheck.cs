@@ -12,6 +12,9 @@ namespace GuardAI.Checks.Assets;
 ///   1. 近似重复：双通道并联——Jaccard ≥ 阈值抓"换皮重写"（改名/改常量再抄一遍），
 ///      Containment ≥ 包含度阈值抓"子集型复制"（删行/加行，如映射样板复制时漏字段）；
 ///   2. 高频方法名重复：两侧方法名命中同一注册表模式（Upload* / GetToken* ...）——抓"又写一遍同名轮子"。
+/// JSX 语义豁免（Issue #1）：含 JSX 标记的方法整体退出规则 1——归一化把标签/属性名抹成 id、
+/// 字符串抹成长度标记后，任意返回 JSX 的函数 token 流天然高度重叠（骨架相似 ≠ 语义重复），
+/// 探针实测任何组件两两 50~100% 撞车；规则 2（名字通道）不受影响。
 /// 零误报三件套：baseline 快照（存量不报，只报新增）+ 阈值/门槛配置 + exclusions 豁免；
 /// 检测能力升级首跑自动把新通道挖出的存量对并入基线（不轰炸存量债），升级前后语义一致。
 /// 修复指令直指已有实现（文件:行），让 AI 当场改成复用。
@@ -22,15 +25,28 @@ public sealed class DuplicateCheck : IGuardCheck
     /// 当前检测能力版本：1 = 仅 Jaccard；2 = Jaccard + Containment 双通道；
     /// 3 = 字符串字面量带长度 token + 方法名解析修正（元组返回值）；
     /// 4 = 多语言成员解析（Java/Kotlin/TS/JS/Go/Python）+ 声明形态闸——检测面与成员键语义变化，
-    /// 旧基线重键的存量对靠首跑收编吸收（见 Run 的升级分支），不轰炸存量债。
+    /// 旧基线重键的存量对靠首跑收编吸收（见 Run 的升级分支），不轰炸存量债；
+    /// 5 = JSX 语义豁免——含 JSX 标记的方法退出近似重复通道（Issue #1）。
     /// </summary>
-    public const int CurrentDetectorVersion = 4;
+    public const int CurrentDetectorVersion = 5;
 
     /// <inheritdoc />
     public string Name => "duplicate";
 
     /// <summary>近似检测用的代码文件扩展名 = 注册表全量支持语言（P4 多语言，单一来源在 MemberParserRegistry）。</summary>
     private static readonly IReadOnlyList<string> CodeExtensions = MemberParserRegistry.Extensions;
+
+    /// <summary>
+    /// JSX 标记：闭合标签（&lt;/Tag&gt;、片段 &lt;/&gt;）或自闭合标签（&lt;Tag ... /&gt;）。
+    /// </summary>
+    /// <remarks>
+    /// 只认带斜杠形态是有意的：单个开标签 &lt;Tag&gt; 与 C# 泛型 &lt;int&gt; 无法区分，会误伤；
+    /// 闭合/自闭合带斜杠形态在非 JSX 语言的清洗后方法体里不会出现（字符串已抹空）。
+    /// 万一误中，代价只是该方法退出近似重复通道（只漏不误），方向安全。
+    /// </remarks>
+    private static readonly Regex JsxMarkup = new(
+        @"</|<\s*[A-Za-z_][\w.]*\s*[^<>]*?/>",
+        RegexOptions.Compiled);
 
     /// <inheritdoc />
     public CheckResult Run(CheckContext context)
@@ -127,6 +143,9 @@ public sealed class DuplicateCheck : IGuardCheck
     {
         var tokenCache = new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal);
         var candidateKeys = candidates.Select(MemberKeyOf).ToHashSet(StringComparer.Ordinal);
+
+        // JSX 成员集合：含 JSX 标记的方法整体退出近似重复通道（骨架相似度无语义区分度，Issue #1）
+        var jsxKeys = all.Where(m => JsxMarkup.IsMatch(m.BodyText)).Select(MemberKeyOf).ToHashSet(StringComparer.Ordinal);
         var results = new Dictionary<string, DetectedPair>(StringComparer.Ordinal);
 
         foreach (var candidate in candidates)
@@ -168,9 +187,10 @@ public sealed class DuplicateCheck : IGuardCheck
                     tokenCache[referenceKey] = tokensReference;
                 }
 
-                // 规则 1：近似重复（过短方法体不参与，防结构性撞车）
+                // 规则 1：近似重复（过短方法体不参与，防结构性撞车；任一侧含 JSX 标记即豁免——骨架相似 ≠ 语义重复）
                 // 双通道并联：Jaccard 抓"换皮重写"（整段改皮），Containment 抓"子集型复制"（删行/加行，如映射样板漏字段）
-                if (tokensCandidate.Count >= config.MinTokens && tokensReference.Count >= config.MinTokens)
+                if (!jsxKeys.Contains(candidateKey) && !jsxKeys.Contains(referenceKey)
+                    && tokensCandidate.Count >= config.MinTokens && tokensReference.Count >= config.MinTokens)
                 {
                     var similarity = CodeSimilarity.Jaccard(tokensCandidate, tokensReference);
                     var containment = CodeSimilarity.Containment(tokensCandidate, tokensReference);
