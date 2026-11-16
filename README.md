@@ -36,7 +36,7 @@ guardAI 管"结构级 + 资产级"规范门禁，并做接入自动化（CI / pr
 
 每个违规都带【给 AI 的修复指令】，能直接照着修，修完复检到 0 违规。
 
-## 启动方式（三选一）
+## 启动方式（四选一）
 
 ### 方式一：发行版（推荐，零依赖）
 
@@ -66,6 +66,31 @@ dotnet run --project src/GuardAI.Cli -- init --repo D:\repos\MyProject --yes
 powershell -ExecutionPolicy Bypass -File test.ps1 -Repo "D:\你的项目" -Steps init,check
 powershell -ExecutionPolicy Bypass -File test.ps1 -Repo "D:\你的项目" -Steps review,learn   # 只跑 AI 触发
 ```
+
+### 方式四：让 AI 帮你装（把下面整段发给你的编码 Agent）
+
+前三种都是人手动操作。这一种是让 Agent 自己下载、装配、验证——把"让 AI 写之前就遵守"提前到"让 AI 把自己管起来"。**复制下面整段发给你的编码 Agent（Claude Code / Cursor / WorkBuddy 等）**：
+
+````text
+请帮我把 guardAI 装进当前项目，让后续所有 AI 写码都受它的骨架门禁约束。严格按步骤做，不要跳步：
+
+1. 按平台下载自包含单文件（无需装 .NET）：
+   - Windows x64：https://github.com/ingkele/guardAI/releases/latest/download/guardAI-win-x64.zip
+   - Linux x64：https://github.com/ingkele/guardAI/releases/latest/download/guardAI-linux-x64.zip
+2. 解压到一个稳定目录，例如项目内 .guard/bin/ 或你的用户主目录——不要放临时目录，
+   因为 hook 会嵌入 exe 绝对路径，删掉二进制后钩子就失效。Linux 解压后执行 chmod +x GuardAI.Cli。
+3. 在项目根目录执行（<exe> 用第 2 步的稳定绝对路径，<项目> 用项目根目录绝对路径）：
+   <exe> init --repo <项目> --yes
+   init 会自动：扫描仓库生成 guardai.yml、探测并接入你正在用的 Agent（hook / skill / 指令）、
+   安装 pre-commit 与 CI 门禁、跑首检。存量违规会被自动收编成基线，不会轰炸你。
+4. 把首检结果贴给我。如果发现违规，先告诉我并等我确认——禁止自行修改 guardai.yml 加豁免来"消掉"违规，
+   那是给自己开后门；真需要例外必须说明原因，我来决定。
+5. 【可选，需要我在写码时直接调 guardAI 工具才做】把下面配置加进你的 MCP 配置文件，
+   command 用第 2 步的 exe 绝对路径：
+   {"mcpServers":{"guardAI":{"command":"<exe 绝对路径>","args":["mcp","--repo","<项目>"]}}}
+````
+
+> 为什么第 4 步写"禁止自行加豁免"：让 AI 自己装门禁，本质是被监管者参与装监管。安装动作是确定性的（下载 + 一条命令），符合"引擎裁判、AI 装配"的分工；但一旦允许它改配置消违规，门禁就形同虚设。这条护栏是必需的。
 
 ## 用法速览
 
@@ -163,7 +188,7 @@ setx MIMO_API_KEY "你的密钥"        # 永久生效（新开窗口才生效�
 | git pre-commit | 本地提交 | `templates/hooks/pre-commit` |
 | CI（GitHub Actions / Gitee Go） | 合入底线，与"谁写的代码"无关 | `templates/ci/` |
 
-外加 `AGENTS.md` 注入片段（骨架红线 + 检索先行 + 改完复检 + 命名 / 分层 / DTO / 魔法串规矩，directive-version 3），带版本戳自动升级。
+外加 `AGENTS.md` 注入片段（骨架红线 + 检索先行 + 改完复检 + 命名 / 分层 / DTO / 魔法串规矩，directive-version 4），带版本戳自动升级。
 
 ## 项目结构
 
