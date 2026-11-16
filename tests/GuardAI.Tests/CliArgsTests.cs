@@ -162,4 +162,39 @@ public class CliArgsTests
 
         Assert.Equal(2, code);
     }
+
+    /// <summary>版本行格式：guardAI v+数字点版本（纯版本行，脚本可解析）。</summary>
+    [Fact]
+    public void VersionLine_格式为guardAI加v版本()
+    {
+        var line = CliHelp.VersionLine();
+
+        Assert.Matches(@"^guardAI v\d+\.\d+\.\d+", line);
+    }
+
+    /// <summary>入口级联动：--version / -V / version 三形态均打版本行并返回 0。</summary>
+    /// <param name="flag">版本参数形态。</param>
+    /// <returns>异步任务。</returns>
+    [Theory]
+    [InlineData("--version")]
+    [InlineData("-V")]
+    [InlineData("version")]
+    public async Task 入口_版本参数_打版本行且退出0(string flag)
+    {
+        var original = Console.Out;
+        using var buffer = new StringWriter();
+        Console.SetOut(buffer);
+        try
+        {
+            var code = await Program.Main(new[] { flag });
+
+            Assert.Equal(0, code);
+        }
+        finally
+        {
+            Console.SetOut(original);
+        }
+
+        Assert.Contains(CliHelp.VersionLine(), buffer.ToString());
+    }
 }

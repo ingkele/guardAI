@@ -2,7 +2,7 @@
 
 > 确定性引擎裁判合规，AI 只做装配。让任何项目在 10 分钟内接入"结构级 + 资产级"规范门禁。
 
-**当前版本**：v0.6.5（2026-11-16 发布：重复检测 JSX 语义豁免 + perf 集合迭代闸，误报根治）· **分发**：win-x64 / linux-x64 自包含单文件（零运行时依赖）· **开发**：.NET 10 · **单测**：400
+**当前版本**：v0.6.6（2026-11-16 发布：`--version` 版本查询）· **分发**：win-x64 / linux-x64 自包含单文件（零运行时依赖）· **开发**：.NET 10 · **单测**：404
 
 ## 它解决什么
 
@@ -200,7 +200,7 @@ src/GuardAI.Init      装配器（扫描、配置生成、闸口安装）
 src/GuardAI.Cli       单入口命令行
 config/presets        语言预设（规则资产）
 templates             闸口模板（CI / hook / AGENTS 片段）
-tests/GuardAI.Tests   xUnit 单测（400 用例）
+tests/GuardAI.Tests   xUnit 单测（404 用例）
 docs/cases            案例库（50 案例 / 39 规则）
 ```
 
@@ -210,7 +210,7 @@ docs/cases            案例库（50 案例 / 39 规则）
 
 | 场景 | 结果 |
 |---|---|
-| 全量单测 | ✅ 400/400 |
+| 全量单测 | ✅ 404/404 |
 | 自举：guardAI 检查自身仓库 | ✅ 七模块全过 0 违规（structure / duplicate / secret / doc / sql / perf / layer；layer 按自身五项目真实依赖方向 dogfood） |
 | 违规现场（DemoShop 实测） | ✅ 5 处全抓，退出码 1 |
 | 多语言冒烟（Java 真重复） | ✅ 100% 相似 3 处全逮，存量债首跑收编不轰炸 |
@@ -224,4 +224,4 @@ docs/cases            案例库（50 案例 / 39 规则）
 
 ## 路线图
 
-P1 核心引擎 + `init` ✅ → P2 MCP + 误报治理 + 台账 ✅ → P3 重复检测 + 能力清单 ✅ → P4 多语言 + 三步 AI 层（`review` / `init --ai` / `learn`）✅（v0.5.0）→ help 体系 + 钩子根治 + AI 触发项（v0.5.1）→ 代码级四检查器（secret / doc / sql / perf）+ prompt 包 v3（v0.6.0）→ 分发链路与文档补齐（v0.6.1 / v0.6.2）→ 测试代码豁免补漏 `*.UnitTests`（v0.6.3）→ 层契约 + 写码前前置门 S1/S2（layer 第七检查器 + `get_layer_contract` + `gate --stdin`，v0.6.4）→ 误报根治（重复检测 JSX 语义豁免 + perf N+1 集合迭代闸，v0.6.5）→ P5 线上轻量版 + 前端规则
+P1 核心引擎 + `init` ✅ → P2 MCP + 误报治理 + 台账 ✅ → P3 重复检测 + 能力清单 ✅ → P4 多语言 + 三步 AI 层（`review` / `init --ai` / `learn`）✅（v0.5.0）→ help 体系 + 钩子根治 + AI 触发项（v0.5.1）→ 代码级四检查器（secret / doc / sql / perf）+ prompt 包 v3（v0.6.0）→ 分发链路与文档补齐（v0.6.1 / v0.6.2）→ 测试代码豁免补漏 `*.UnitTests`（v0.6.3）→ 层契约 + 写码前前置门 S1/S2（layer 第七检查器 + `get_layer_contract` + `gate --stdin`，v0.6.4）→ 误报根治（重复检测 JSX 语义豁免 + perf N+1 集合迭代闸，v0.6.5）→ `--version` 版本查询（v0.6.6）→ P5 线上轻量版 + 前端规则

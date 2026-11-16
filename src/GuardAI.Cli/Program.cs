@@ -43,6 +43,12 @@ internal static class Program
                 return ExitOk;
             }
 
+            if (args[0] is "-V" or "--version" or "version")
+            {
+                Console.WriteLine(CliHelp.VersionLine());
+                return ExitOk;
+            }
+
             var command = args[0];
             var parsed = CliArgs.Parse(command, args[1..]);
             if (parsed.HelpRequested)

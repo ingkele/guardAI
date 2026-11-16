@@ -1,3 +1,5 @@
+using System.Reflection;
+
 namespace GuardAI.Cli;
 
 /// <summary>
@@ -144,6 +146,9 @@ internal static class CliHelp
             命令:
             {string.Join(Environment.NewLine, Docs.Select(d => $"  {d.Name,-7} {FirstLine(d.Description)}"))}
 
+            全局:
+              guardAI --version    显示版本号（-V / version 同）
+
             台账:
               每次 check 自动写入 .guard/records/runs.jsonl（--no-record 关闭）；
               违规指纹从最新运行消失即计为已修复，闭环率在 ui 网页查看。
@@ -153,6 +158,22 @@ internal static class CliHelp
 
             详细用法: guardAI <命令> --help（子命令级）；本页为全局总览。
             """;
+    }
+
+    /// <summary>
+    /// 版本行（--version 输出；纯版本行，脚本可解析）。
+    /// </summary>
+    /// <remarks>
+    /// 版本号取 GuardAI.Cli 程序集的 InformationalVersion（即 Directory.Build.props 的 &lt;Version&gt;）；
+    /// 用本程序集而非入口程序集，保证测试宿主下取值不失真。带 SourceLink 后缀（+hash）时截断。
+    /// </remarks>
+    /// <returns>形如 guardAI v0.6.6 的版本行。</returns>
+    internal static string VersionLine()
+    {
+        var assembly = typeof(CliHelp).Assembly;
+        var info = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+        var version = (info ?? assembly.GetName().Version?.ToString() ?? "unknown").Split('+')[0];
+        return $"guardAI v{version}";
     }
 
     /// <summary>
