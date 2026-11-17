@@ -59,20 +59,82 @@ public sealed class OpenAICompatClient : ILlmClient
             : null;
         if (string.IsNullOrWhiteSpace(content))
         {
-            // 推理模型（reasoning_content）常因思考耗尽 max_tokens 导致正文为空——给出可行动的报错
-            var finishReason = doc.RootElement.TryGetProperty("choices", out var c) && c.GetArrayLength() > 0
-                && c[0].TryGetProperty("finish_reason", out var fr) ? fr.GetString() : null;
-            if (finishReason == "length")
-            {
-                throw new LlmException(
-                    $"模型输出被 max_tokens 截断（finish_reason=length，当前 ai.max_tokens={_config.MaxTokens}）。"
-                    + "推理模型会先消耗思考预算，建议把 ai.max_tokens 调大（16384 起步）后重试。");
-            }
-
-            throw new LlmException($"OpenAI 协议响应缺少 choices[0].message.content：{LlmText.Truncate(body)}");
+            throw BuildEmptyContentError(doc.RootElement);
         }
 
         return content;
     }
 
+    /// <summary>
+    /// 正文为空时按真实原因给出可行动的报错（Issue #2）。
+    /// </summary>
+    /// <param name="root">响应 JSON 根元素。</param>
+    /// <returns>按原因分类的异常（调用方 throw）。</returns>
+    /// <remarks>
+    /// 原实现把「正文为空」一律归因为「max_tokens 截断」，且文案写死「16384 起步」——
+    /// 用户把 max_tokens 调到 32768 仍看到同一句话，被指向错误的修复方向。三路区分：
+    /// ①finish_reason=length → 确属截断，但只报实际配置值，不再给写死的起步值；
+    /// ②正文空但 reasoning_content 非空 → 推理模型只出了思考、没出正文；
+    /// ③其余 → 就是模型返回了空正文，不再复述「截断」，也不把整个 JSON 塞进报错。
+    /// 部分厂商字段名为 <c>reasoning</c>（DeepSeek-R1 系），一并认。
+    /// </remarks>
+    private LlmException BuildEmptyContentError(JsonElement root)
+    {
+        var choice = root.TryGetProperty("choices", out var choices) && choices.GetArrayLength() > 0
+            ? choices[0]
+            : (JsonElement?)null;
+
+        var finishReason = choice?.TryGetProperty("finish_reason", out var fr) == true ? fr.GetString() : null;
+        var reasoning = ReadReasoning(choice);
+
+        if (finishReason == "length")
+        {
+            return new LlmException(
+                $"模型输出被 max_tokens 截断（finish_reason=length，当前 ai.max_tokens={_config.MaxTokens}）。"
+                + "推理模型会先消耗思考预算；请按需调大 ai.max_tokens，或减少单次送审的代码量后重试。");
+        }
+
+        if (!string.IsNullOrWhiteSpace(reasoning))
+        {
+            return new LlmException(
+                $"模型只返回了思考内容、未返回正文（finish_reason={finishReason ?? "未知"}，"
+                + $"ai.max_tokens={_config.MaxTokens}）。"
+                + "常见于推理模型思考预算耗尽即止：换非推理模型，或调大 ai.max_tokens，或减少送审代码量。");
+        }
+
+        return new LlmException(
+            $"模型返回空正文（finish_reason={finishReason ?? "未知"}，ai.max_tokens={_config.MaxTokens}）。"
+            + "检查该模型的 chat/completions 响应是否符合 OpenAI 协议"
+            + "（choices[0].message.content 应为字符串），或换模型后重试。");
+    }
+
+    /// <summary>
+    /// 读取思考内容（兼容 <c>reasoning_content</c> 与 <c>reasoning</c> 两种厂商字段名）。
+    /// </summary>
+    /// <param name="choice">choices[0] 元素（可为空）。</param>
+    /// <returns>思考内容；不存在或为空时返回 null。</returns>
+    private static string? ReadReasoning(JsonElement? choice)
+    {
+        if (choice is not { } element || !element.TryGetProperty("message", out var message))
+        {
+            return null;
+        }
+
+        foreach (var field in ReasoningFields)
+        {
+            if (message.TryGetProperty(field, out var value) && value.ValueKind == JsonValueKind.String)
+            {
+                var text = value.GetString();
+                if (!string.IsNullOrWhiteSpace(text))
+                {
+                    return text;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>思考内容的厂商字段名（按优先级）。</summary>
+    private static readonly string[] ReasoningFields = ["reasoning_content", "reasoning"];
 }

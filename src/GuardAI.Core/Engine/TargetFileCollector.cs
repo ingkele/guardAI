@@ -51,12 +51,19 @@ public static class TargetFileCollector
     /// <summary>
     /// changed 模式：从 git status 收集新增/改动文件（跳过已删除）。
     /// </summary>
+    /// <remarks>
+    /// 路径基准（Issue #5）：git status 默认输出相对 **仓库根** 的路径，而全部检查器的白名单/
+    /// 豁免/落位规则都相对 <c>--repo</c> 匹配。monorepo 子目录（如 --repo web）下两者差一层前缀，
+    /// 导致 changed 模式把每个改动文件都判成「野目录」、exclusions 也全部失效，pre-commit 被硬拦。
+    /// 双重保险：①加 <c>-- .</c> 路径限定（git 在限定路径下输出相对当前目录）；
+    /// ②仍带仓库根前缀时剥掉（不同 git 版本对 ① 的处理不完全一致）。
+    /// </remarks>
     private static void CollectChanged(string repoPath, List<string> files)
     {
         var psi = new ProcessStartInfo
         {
             FileName = "git",
-            Arguments = "status --porcelain -uall",
+            Arguments = "status --porcelain -uall -- .",
             WorkingDirectory = repoPath,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
@@ -72,6 +79,9 @@ public static class TargetFileCollector
         {
             throw new InvalidOperationException("目标目录不是 git 仓库，changed 模式不可用。请在 git 仓库中运行，或改用 --mode all");
         }
+
+        // 兜底：git 仍给出仓库根相对路径时，剥掉 --repo 相对仓库根的公共前缀
+        var prefix = RepoPrefixFromGitRoot(repoPath);
 
         foreach (var entry in output.Split('\n'))
         {
@@ -94,7 +104,58 @@ public static class TargetFileCollector
             }
 
             path = path.Trim('"').Replace('\\', '/');
+            if (prefix is not null && path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            {
+                path = path[prefix.Length..];
+            }
+
             files.Add(path);
+        }
+    }
+
+    /// <summary>
+    /// 求 <paramref name="repoPath"/> 相对 git 仓库根的前缀（正斜杠、带尾部斜杠）；仓库根即自身时返回 null。
+    /// </summary>
+    /// <param name="repoPath">检查目标目录（绝对路径）。</param>
+    /// <returns>形如 <c>web/</c> 的前缀；无法判定或无需剥离时返回 null。</returns>
+    /// <remarks>
+    /// 非 git 场景（<c>--mode all</c> 或裸目录）不求前缀，直接返回 null——本方法只服务 changed 的路径归一。
+    /// 用 <c>git rev-parse --show-prefix</c> 而不是自己算相对路径：它按 git 的路径语义给出权威答案，
+    /// 不受符号链接、盘符大小写、反斜杠差异影响。
+    /// </remarks>
+    private static string? RepoPrefixFromGitRoot(string repoPath)
+    {
+        var psi = new ProcessStartInfo
+        {
+            FileName = "git",
+            Arguments = "rev-parse --show-prefix",
+            WorkingDirectory = repoPath,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        };
+
+        try
+        {
+            using var process = Process.Start(psi);
+            if (process is null)
+            {
+                return null;
+            }
+
+            var output = process.StandardOutput.ReadToEnd().Trim();
+            process.WaitForExit();
+            if (process.ExitCode != 0)
+            {
+                return null; // 非 git 仓库（理论上 changed 已报错，此处只做防御）
+            }
+
+            return output.Length == 0 ? null : output.Replace('\\', '/');
+        }
+        catch (InvalidOperationException)
+        {
+            return null; // git 未安装：交给上层 changed 的报错路径
         }
     }
 

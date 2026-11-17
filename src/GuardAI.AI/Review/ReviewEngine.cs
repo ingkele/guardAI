@@ -31,6 +31,7 @@ public sealed class ReviewEngine
     /// <param name="ruleSummary">项目规则摘要（送给模型的上下文），可空。</param>
     /// <param name="cancellationToken">取消令牌。</param>
     /// <param name="isCodeFile">all 模式的代码文件过滤谓词；null 收全部文本文件。</param>
+    /// <param name="onProgress">进度回调（可选）：差异收集完成后、模型调用前各触发一次，供 CLI 打可观察进度（Issue #4）。</param>
     /// <returns>审查报告。</returns>
     /// <exception cref="InvalidOperationException">没有可审查的改动。</exception>
     /// <exception cref="LlmException">模型调用失败。</exception>
@@ -41,11 +42,18 @@ public sealed class ReviewEngine
         string? baseRef,
         string? ruleSummary,
         CancellationToken cancellationToken = default,
-        Func<string, bool>? isCodeFile = null)
+        Func<string, bool>? isCodeFile = null,
+        Action<ReviewProgress>? onProgress = null)
     {
         var (diffText, files) = await DiffCollector.CollectAsync(repoPath, mode, baseRef, cancellationToken, isCodeFile).ConfigureAwait(false);
+
+        // 差异收集完成 → 立即吐进度（原来的实现在模型返回后才打印规模，长等待期间全程静默）
+        onProgress?.Invoke(new ReviewProgress(ReviewProgressStage.Collected, files, diffText.Length));
+        onProgress?.Invoke(new ReviewProgress(ReviewProgressStage.CallingModel, files, diffText.Length));
+
         var user = ReviewPrompt.BuildUser(ruleSummary, diffText);
         var output = await _client.ChatAsync(ReviewPrompt.BuildSystem(), user, cancellationToken).ConfigureAwait(false);
+        onProgress?.Invoke(new ReviewProgress(ReviewProgressStage.ModelReturned, files, diffText.Length));
         var findings = ReviewParser.Parse(output);
 
         return new ReviewReport(

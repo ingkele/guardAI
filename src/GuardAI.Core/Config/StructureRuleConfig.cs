@@ -101,6 +101,9 @@ public sealed class StructureRuleConfig
 
     /// <summary>Web / Application 层出参禁止暴露持久化实体（缺省 true）。</summary>
     public bool ForbidDtoEntity { get; init; } = true;
+
+    /// <summary>端点鉴权检查配置（endpoint_auth 段，Issue #6；缺省未启用）。</summary>
+    public EndpointAuthRuleConfig EndpointAuth { get; init; } = EndpointAuthRuleConfig.Default;
 }
 
 /// <summary>
@@ -217,6 +220,7 @@ public static class StructureRuleConfigLoader
             CapabilityExclude = ParseCapabilityExclude(root, configFileName),
             Layers = layers,
             AllowedDependencies = ParseAllowedDependencies(root, layers, configFileName),
+            EndpointAuth = ParseEndpointAuth(root, configFileName),
             ForbidDtoEntity = ParseForbidDtoEntity(root, configFileName),
         };
     }
@@ -247,6 +251,87 @@ public static class StructureRuleConfigLoader
         }
 
         return layers;
+    }
+
+    /// <summary>
+    /// 解析 endpoint_auth 段（Issue #6）：enabled / exemptions（强制 reason）/ require_permission。
+    /// </summary>
+    /// <param name="root">YAML 根字典。</param>
+    /// <param name="configFileName">配置文件名（报错回显）。</param>
+    /// <returns>端点鉴权配置；未配置段时返回默认（未启用）。</returns>
+    /// <exception cref="FormatException">豁免条目缺 reason 或字段非法时抛出。</exception>
+    /// <remarks>
+    /// 豁免强制 reason 是刻意的：白名单一旦可以不写理由，就会变成"为了过检查随手加"的摆设，
+    /// 规则随即失去意义。缺 reason 直接拒绝解析，让问题在配置阶段暴露而不是在门禁里被绕过。
+    /// </remarks>
+    private static EndpointAuthRuleConfig ParseEndpointAuth(
+        IReadOnlyDictionary<string, object?> root, string configFileName)
+    {
+        if (!root.TryGetValue("endpoint_auth", out var raw) || raw is null)
+        {
+            return EndpointAuthRuleConfig.Default;
+        }
+
+        if (raw is not IReadOnlyDictionary<string, object?> section)
+        {
+            throw new FormatException($"配置错误（{configFileName}）：'endpoint_auth' 必须是映射（key: value）");
+        }
+
+        var enabled = section.TryGetValue("enabled", out var enabledRaw)
+            && AsString(enabledRaw).Trim().ToLowerInvariant() is "true" or "yes" or "1";
+
+        var requirePermission = section.TryGetValue("require_permission", out var permRaw)
+            && AsString(permRaw).Trim().ToLowerInvariant() is "true" or "yes" or "1";
+
+        var exemptions = new List<EndpointExemption>();
+        if (section.TryGetValue("exemptions", out var exRaw) && exRaw is System.Collections.IEnumerable items)
+        {
+            foreach (var item in items)
+            {
+                if (item is not IReadOnlyDictionary<string, object?> map)
+                {
+                    throw new FormatException($"配置错误（{configFileName}）：'endpoint_auth.exemptions' 每项必须是映射");
+                }
+
+                var path = AsString(map.GetValueOrDefault("path")).Trim();
+                var reason = AsString(map.GetValueOrDefault("reason")).Trim();
+                if (path.Length == 0)
+                {
+                    throw new FormatException($"配置错误（{configFileName}）：'endpoint_auth.exemptions' 每项必须写明 path");
+                }
+
+                if (reason.Length == 0)
+                {
+                    // 豁免必须写理由：防止为过检查随手加白名单把规则变摆设
+                    throw new FormatException(
+                        $"配置错误（{configFileName}）：'endpoint_auth.exemptions' 的 '{path}' 缺少 reason。"
+                        + "刻意匿名的端点必须写明理由（如「容器健康探针，无业务数据」），否则规则会被白名单架空。");
+                }
+
+                var endpoints = new List<string>();
+                if (map.GetValueOrDefault("endpoints") is System.Collections.IEnumerable endpointItems)
+                {
+                    foreach (var endpoint in endpointItems)
+                    {
+                        var route = AsString(endpoint).Trim();
+                        if (route.Length > 0)
+                        {
+                            endpoints.Add(route);
+                        }
+                    }
+                }
+
+                if (endpoints.Count == 0)
+                {
+                    throw new FormatException(
+                        $"配置错误（{configFileName}）：'endpoint_auth.exemptions' 的 '{path}' 必须至少列出一个 endpoints 路由");
+                }
+
+                exemptions.Add(new EndpointExemption(path, endpoints, reason));
+            }
+        }
+
+        return new EndpointAuthRuleConfig(enabled, exemptions, requirePermission);
     }
 
     /// <summary>

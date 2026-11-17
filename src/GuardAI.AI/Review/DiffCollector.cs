@@ -86,36 +86,37 @@ public static class DiffCollector
 
         var diff = mode switch
         {
-            "staged" => await RunGitAsync(repoPath, cancellationToken, "diff", "--cached", "--unified=3").ConfigureAwait(false),
-            "base" when !string.IsNullOrWhiteSpace(baseRef) => await RunGitAsync(repoPath, cancellationToken, "diff", baseRef!, "--unified=3").ConfigureAwait(false),
+            "staged" => await RunGitAsync(repoPath, cancellationToken, "diff", "--cached", "--unified=3", "--", ".").ConfigureAwait(false),
+            "base" when !string.IsNullOrWhiteSpace(baseRef) => await RunGitAsync(repoPath, cancellationToken, "diff", baseRef!, "--unified=3", "--", ".").ConfigureAwait(false),
             "base" => throw new InvalidOperationException("base 模式必须提供 --base <git 引用>（如 --base origin/main）。"),
-            _ => await RunGitAsync(repoPath, cancellationToken, "diff", "HEAD", "--unified=3").ConfigureAwait(false),
+            _ => await RunGitAsync(repoPath, cancellationToken, "diff", "HEAD", "--unified=3", "--", ".").ConfigureAwait(false),
         };
 
         var sb = new StringBuilder();
         var skipped = new List<string>();
 
         // diff 按文件段切分：敏感文件的段整体不外发（已跟踪文件的改动同样可能是密钥）
-        var files = AppendDiffSegments(sb, diff, skipped);
+        var files = AppendDiffSegments(sb, diff, skipped, repoPath);
 
         // 未跟踪的新文件（AI 产出的新增代码常常还没 git add，必须纳入审查）
         if (mode is "changed" or "base")
         {
-            var untracked = (await RunGitAsync(repoPath, cancellationToken, "ls-files", "--others", "--exclude-standard").ConfigureAwait(false))
+            var untracked = (await RunGitAsync(repoPath, cancellationToken, "ls-files", "--others", "--exclude-standard", "--", ".").ConfigureAwait(false))
                 .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             foreach (var relative in untracked)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var full = Path.Combine(repoPath, relative.Replace('/', Path.DirectorySeparatorChar));
+                var normalized = NormalizeRepoRelative(repoPath, relative);
+                var full = Path.Combine(repoPath, normalized.Replace('/', Path.DirectorySeparatorChar));
                 if (!File.Exists(full) || new FileInfo(full).Length > MaxFileBytes)
                 {
                     continue;
                 }
 
-                if (IsSensitive(relative))
+                if (IsSensitive(normalized))
                 {
-                    skipped.Add(relative);
+                    skipped.Add(normalized);
                     continue;
                 }
 
@@ -127,7 +128,7 @@ public static class DiffCollector
 
                 if (SecretContentPattern.IsMatch(content))
                 {
-                    skipped.Add(relative);
+                    skipped.Add(normalized);
                     continue; // 内容疑似含密钥：宁可漏审也不外发
                 }
 
@@ -136,7 +137,7 @@ public static class DiffCollector
                     content = content[..MaxFileChars] + "\n…（文件过长已截断）";
                 }
 
-                sb.AppendLine($"--- 新增文件 {relative}（完整内容）---");
+                sb.AppendLine($"--- 新增文件 {normalized}（完整内容）---");
                 sb.AppendLine(content);
                 files++;
             }
@@ -264,13 +265,91 @@ public static class DiffCollector
     }
 
     /// <summary>
+    /// 把 git 给出的路径归一到「相对 <paramref name="repoPath"/>」的基准（正斜杠）。
+    /// </summary>
+    /// <param name="repoPath">目标根目录（可能与 git 仓库根不同层级）。</param>
+    /// <param name="gitPath">git 输出的路径（可能相对仓库根）。</param>
+    /// <returns>相对 <paramref name="repoPath"/> 的路径。</returns>
+    /// <remarks>
+    /// Issue #5：monorepo 子目录送审时，git 输出带仓库根前缀（<c>web/src/x.ts</c>），
+    /// 而送审文本里的路径与用户读取配置的基准都是相对 <c>--repo</c>。统一剥前缀，
+    /// 让模型看到的路径与用户配置口径一致（否则报出的路径无法直接定位）。
+    /// <c>git rev-parse --show-prefix</c> 给出权威前缀；取不到（非 git / 裸目录）时原样返回。
+    /// </remarks>
+    private static string NormalizeRepoRelative(string repoPath, string gitPath)
+    {
+        var normalized = gitPath.Replace('\\', '/');
+        var prefix = GitRootPrefix(repoPath);
+        return prefix is not null && normalized.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+            ? normalized[prefix.Length..]
+            : normalized;
+    }
+
+    /// <summary>缓存「目录 → 相对 git 仓库根的前缀」（一次运行内多次收集只求一次）。</summary>
+    private static readonly Dictionary<string, string?> PrefixCache = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// 求目录相对 git 仓库根的前缀（正斜杠、带尾斜杠）；仓库根即自身或非 git 时返回 null。
+    /// </summary>
+    /// <param name="repoPath">目标根目录。</param>
+    /// <returns>形如 <c>web/</c> 的前缀；无需剥离时 null。</returns>
+    private static string? GitRootPrefix(string repoPath)
+    {
+        lock (PrefixCache)
+        {
+            if (PrefixCache.TryGetValue(repoPath, out var cached))
+            {
+                return cached;
+            }
+        }
+
+        var psi = new ProcessStartInfo
+        {
+            FileName = "git",
+            Arguments = "rev-parse --show-prefix",
+            WorkingDirectory = repoPath,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        };
+
+        string? prefix = null;
+        try
+        {
+            using var process = Process.Start(psi);
+            if (process is not null)
+            {
+                var output = process.StandardOutput.ReadToEnd().Trim();
+                process.WaitForExit();
+                if (process.ExitCode == 0 && output.Length > 0)
+                {
+                    prefix = output.Replace('\\', '/');
+                }
+            }
+        }
+        catch (InvalidOperationException)
+        {
+            prefix = null; // git 未安装：上层会给出人话报错
+        }
+
+        lock (PrefixCache)
+        {
+            PrefixCache[repoPath] = prefix;
+        }
+
+        return prefix;
+    }
+
+    /// <summary>
     /// 按文件段追加 diff 内容（敏感文件段跳过并记名）。
     /// </summary>
     /// <param name="sb">输出缓冲。</param>
     /// <param name="diff">git diff 原文。</param>
     /// <param name="skipped">被跳过的敏感文件清单（只记文件名）。</param>
+    /// <param name="repoPath">目标根目录（路径基准归一用）。</param>
     /// <returns>纳入送审的文件数。</returns>
-    private static int AppendDiffSegments(StringBuilder sb, string diff, List<string> skipped)
+    private static int AppendDiffSegments(StringBuilder sb, string diff, List<string> skipped, string repoPath)
     {
         var files = 0;
         foreach (var segment in SplitDiffSegments(diff))
@@ -278,9 +357,10 @@ public static class DiffCollector
             var relative = ExtractDiffPath(segment);
 
             // 文件名命中敏感模式，或段内内容命中密钥特征（路径提取失败时的兜底闸），均不外发
+            // 敏感判定用仓库根相对路径（目录族模式如 .aws/ 需要完整路径段才能命中）
             if ((relative is not null && IsSensitive(relative)) || SecretContentPattern.IsMatch(segment))
             {
-                skipped.Add(relative ?? "(diff 段，路径不可辨)");
+                skipped.Add(relative is null ? "(diff 段，路径不可辨)" : NormalizeRepoRelative(repoPath, relative));
                 continue;
             }
 
@@ -402,7 +482,10 @@ public static class DiffCollector
     private static string DescribeGitFailure(string[] args, string stderr)
     {
         // 非 git 目录：用户真正需要的是"下一步怎么办"，不是 git 的 usage 说明书
-        if (stderr.Contains("not a git repository", StringComparison.OrdinalIgnoreCase))
+        // 注：带 `-- .` 路径限定时 git 的报错会退化成 "error: Could not access 'HEAD'"（不再说 not a git repository），
+        // 因此两种形态都要认，否则人话报错在第 5 类场景下失效（回归由 DiffCollectorTests 锁定）
+        if (stderr.Contains("not a git repository", StringComparison.OrdinalIgnoreCase)
+            || stderr.Contains("Could not access 'HEAD'", StringComparison.OrdinalIgnoreCase))
         {
             return "目标目录不是 git 仓库，无法用 diff 模式圈定改动范围。"
                 + "散文件/案例目录请用 --mode all 全量送审；确要审改动则先 git init 并提交。";

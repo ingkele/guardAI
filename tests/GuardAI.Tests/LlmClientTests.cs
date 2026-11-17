@@ -131,4 +131,56 @@ public class LlmClientTests
         Assert.IsType<AnthropicClient>(LlmClientFactory.Create(http, Config("anthropic")));
         Assert.IsType<OllamaClient>(LlmClientFactory.Create(http, Config("ollama")));
     }
+
+    /// <summary>
+    /// 空正文按真实原因分路报错（Issue #2）：有思考内容 vs 纯空正文必须给不同结论，且都不许怪截断。
+    /// </summary>
+    /// <param name="responseBody">模型响应体（覆盖 reasoning_content / reasoning 两种厂商字段名，及 content 的两种空形态）。</param>
+    /// <param name="expectedText">该情形下报错必须包含的关键结论。</param>
+    [Theory]
+    [InlineData("""{"choices":[{"finish_reason":"stop","message":{"content":"","reasoning_content":"我先分析一下…"}}]}""", "只返回了思考内容")]
+    [InlineData("""{"choices":[{"finish_reason":"stop","message":{"content":null,"reasoning":"思考中…"}}]}""", "只返回了思考内容")]
+    [InlineData("""{"choices":[{"finish_reason":"stop","message":{"content":""}}]}""", "模型返回空正文")]
+    public async Task openai协议_空正文_按原因分路报错且不怪截断(string responseBody, string expectedText)
+    {
+        var handler = new FakeHandler(responseBody);
+        using var http = new HttpClient(handler);
+        var client = new OpenAICompatClient(http, Config("openai"));
+
+        var ex = await Assert.ThrowsAsync<LlmException>(() => client.ChatAsync("s", "u"));
+
+        Assert.Contains(expectedText, ex.Message);
+        Assert.Contains("finish_reason=stop", ex.Message);
+        Assert.DoesNotContain("截断", ex.Message);
+    }
+
+    /// <summary>finish_reason=length：保留截断语义，但不再写死「16384 起步」，只报实际配置值。</summary>
+    [Fact]
+    public async Task openai协议_长度截断_报实际配置值不写死起步值()
+    {
+        var handler = new FakeHandler("""{"choices":[{"finish_reason":"length","message":{"content":""}}]}""");
+        using var http = new HttpClient(handler);
+        var client = new OpenAICompatClient(http, new AIConfig(
+            "openai", "https://api.example.com/v1", "test-model", null, MaxTokens: 32768));
+
+        var ex = await Assert.ThrowsAsync<LlmException>(() => client.ChatAsync("s", "u"));
+
+        Assert.Contains("截断", ex.Message);
+        Assert.Contains("ai.max_tokens=32768", ex.Message);
+        Assert.DoesNotContain("16384 起步", ex.Message);
+    }
+
+    /// <summary>空正文报错不再回显整个响应体（避免大体 JSON 淹没真因）。</summary>
+    [Fact]
+    public async Task openai协议_空正文报错_不回显原始响应体()
+    {
+        var handler = new FakeHandler(
+            """{"id":"chatcmpl-verylongidentifier","object":"chat.completion","model":"m","choices":[{"finish_reason":"stop","message":{"content":""}}]}""");
+        using var http = new HttpClient(handler);
+        var client = new OpenAICompatClient(http, Config("openai"));
+
+        var ex = await Assert.ThrowsAsync<LlmException>(() => client.ChatAsync("s", "u"));
+
+        Assert.DoesNotContain("chatcmpl-verylongidentifier", ex.Message);
+    }
 }

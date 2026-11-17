@@ -50,17 +50,114 @@ internal sealed class TempRepoFixture : IDisposable
     }
 
     /// <summary>
+    /// 把临时目录初始化成 git 仓库并提交一次（changed 模式场景用）。
+    /// </summary>
+    /// <remarks>
+    /// 用 <c>git init -q</c> + 显式 user 配置：CI 机器常无全局 git 身份，
+    /// 不显式给会导致 commit 失败、测试看似"没改动"而假绿。
+    /// </remarks>
+    public void InitGitRepository()
+    {
+        RunGit("init", "-q", ".");
+        RunGit("config", "user.email", "guardai-tests@example.com");
+        RunGit("config", "user.name", "guardai-tests");
+        RunGit("config", "commit.gpgsign", "false");
+    }
+
+    /// <summary>
+    /// 把当前全部改动提交进 git（构造"已提交的基线"）。
+    /// </summary>
+    /// <param name="message">提交信息。</param>
+    public void CommitAll(string message = "baseline")
+    {
+        RunGit("add", "-A");
+        RunGit("commit", "-q", "-m", message);
+    }
+
+    /// <summary>
+    /// 在指定目录（相对临时根）执行 git 命令，失败时抛出带 stderr 的异常。
+    /// </summary>
+    /// <param name="arguments">git 参数。</param>
+    public void RunGit(params string[] arguments)
+    {
+        var psi = new System.Diagnostics.ProcessStartInfo
+        {
+            FileName = "git",
+            WorkingDirectory = Path,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        };
+        foreach (var argument in arguments)
+        {
+            psi.ArgumentList.Add(argument);
+        }
+
+        using var process = System.Diagnostics.Process.Start(psi)
+            ?? throw new InvalidOperationException("测试需要 git 在 PATH 中");
+        var stderr = process.StandardError.ReadToEnd();
+        process.StandardOutput.ReadToEnd();
+        process.WaitForExit();
+        if (process.ExitCode != 0)
+        {
+            throw new InvalidOperationException($"git {string.Join(' ', arguments)} 失败：{stderr}");
+        }
+    }
+
+    /// <summary>
     /// 清理临时目录（清理失败不影响测试结论）。
     /// </summary>
+    /// <remarks>
+    /// git 仓库场景（<see cref="InitGitRepository"/>）下 .git 内有只读对象文件，
+    /// 且 git 进程刚退出时可能短暂占用；先清只读位再删，仍失败就放弃
+    /// （Windows 上残留临时目录远好过让断言失败变假红）。
+    /// </remarks>
     public void Dispose()
     {
+        if (!Directory.Exists(Path))
+        {
+            return;
+        }
+
+        ClearReadOnly(Path);
         try
         {
             Directory.Delete(Path, recursive: true);
         }
-        catch (IOException)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            // 清理失败不影响测试结论（含目录已不存在）
+            // 清理失败不影响测试结论（残留目录由系统临时目录清理策略回收）
+        }
+    }
+
+    /// <summary>
+    /// 递归清掉只读属性（.git 对象文件默认只读，Windows 上会挡住删除）。
+    /// </summary>
+    /// <param name="directory">目录绝对路径。</param>
+    private static void ClearReadOnly(string directory)
+    {
+        try
+        {
+            foreach (var file in Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories))
+            {
+                try
+                {
+                    var attributes = File.GetAttributes(file);
+                    if ((attributes & FileAttributes.ReadOnly) != 0)
+                    {
+                        File.SetAttributes(file, attributes & ~FileAttributes.ReadOnly);
+                    }
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    // 单个文件处理失败不阻断整体清理
+                }
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // 目录枚举失败：交给上层 Delete 的容错
         }
     }
 

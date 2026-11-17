@@ -54,6 +54,8 @@ allowed_dirs:
     purpose: secret 密钥扫描检查模块（AI 审查密钥泄露发现的沉淀，2026-10-22 人工确认后补进）
   - path: src/GuardAI.Checks/Code/*
     purpose: 代码级检查模块（doc/sql/perf，learn 回放 91 发现人工筛沉淀，2026-10-23 补进）
+  - path: src/GuardAI.Checks/Api/*
+    purpose: 端点级检查模块（endpoint 鉴权声明，Issue #6 需求 2026-11-17 补进）
   - path: src/GuardAI.Cli/*
     purpose: init 实测既有子目录
   - path: src/GuardAI.Core/*

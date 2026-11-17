@@ -3,6 +3,7 @@ using GuardAI.AI;
 using GuardAI.AI.Config;
 using GuardAI.AI.Llm;
 using GuardAI.AI.Review;
+using GuardAI.Checks.Api;
 using GuardAI.Checks.Assets;
 using GuardAI.Checks.Code;
 using GuardAI.Checks.Security;
@@ -107,13 +108,13 @@ internal static class Program
         var context = new CheckContext(repo, mode, config, Path.GetFileName(configPath), strict);
 
         // 检查模块插槽：新增模块在此注册即可（调用方式永远不变）
-        var checks = new List<IGuardCheck> { new StructureCheck(), new DuplicateCheck(), new SecretScanCheck(), new DocCheck(), new SqlSafetyCheck(), new PerfCheck(), new LayerContractCheck() };
+        var checks = new List<IGuardCheck> { new StructureCheck(), new DuplicateCheck(), new SecretScanCheck(), new DocCheck(), new SqlSafetyCheck(), new PerfCheck(), new LayerContractCheck(), new EndpointAuthCheck() };
         if (Get(options, "only") is { } only && only != "all")
         {
             checks = checks.Where(c => string.Equals(c.Name, only, StringComparison.OrdinalIgnoreCase)).ToList();
             if (checks.Count == 0)
             {
-                return Fail($"未知检查模块: {only}（可用：structure / duplicate / secret / doc / sql / perf / layer / all）");
+                return Fail($"未知检查模块: {only}（可用：structure / duplicate / secret / doc / sql / perf / layer / endpoint / all）");
             }
         }
 
@@ -185,6 +186,43 @@ internal static class Program
     }
 
     /// <summary>
+    /// 解析 review 的收集模式，并按 <c>--base</c> 的存在自动推导（Issue #3）。
+    /// </summary>
+    /// <param name="options">命令选项。</param>
+    /// <param name="hint">需要向用户提示的推导说明（无需提示时为 null）。</param>
+    /// <returns>最终模式（小写）。</returns>
+    /// <remarks>
+    /// 修 <c>--base</c> 被静默忽略：只说 <c>--base X</c> 时 git 习惯上就是「与 X 比差异」，
+    /// 由参数反推 <c>mode=base</c> 并明示一行；显式给了别的 mode 又带 <c>--base</c> 则直接报错
+    /// ——静默失效是最难排查的一类问题，必须在 CLI 层挡住。
+    /// </remarks>
+    internal static string ResolveReviewMode(Dictionary<string, string?> options, out string? hint)
+    {
+        hint = null;
+        var explicitMode = Get(options, "mode")?.Trim().ToLowerInvariant();
+        var hasBase = !string.IsNullOrWhiteSpace(Get(options, "base"));
+
+        if (!hasBase)
+        {
+            return explicitMode ?? "changed";
+        }
+
+        if (explicitMode is null)
+        {
+            hint = "提示: 检测到 --base，已自动按 mode=base 收集差异（如需其他模式请显式指定 --mode）。";
+            return "base";
+        }
+
+        if (explicitMode != "base")
+        {
+            throw new FormatException(
+                $"--base 仅用于 --mode base；当前 mode={explicitMode}。请去掉 --base，或改用 --mode base。");
+        }
+
+        return explicitMode;
+    }
+
+    /// <summary>
     /// 执行语义审查命令：AI 审查员对改动做命名/注释/分层/复用等语义审查（引擎管机械项，AI 管语义项）。
     /// </summary>
     /// <param name="options">命令选项（repo/mode/base/config/report/json/fail-on）。</param>
@@ -197,7 +235,12 @@ internal static class Program
             return Fail($"目标目录不存在: {repo}");
         }
 
-        var mode = (Get(options, "mode") ?? "changed").Trim().ToLowerInvariant();
+        var mode = ResolveReviewMode(options, out var modeHint);
+        if (modeHint is not null)
+        {
+            Console.Error.WriteLine(modeHint);
+        }
+
         if (!DiffCollector.SupportedModes.Contains(mode))
         {
             throw new FormatException($"未知收集模式: {mode}（可用：{string.Join(" / ", DiffCollector.SupportedModes)}）");
@@ -256,11 +299,15 @@ internal static class Program
         var client = LlmClientFactory.Create(http, aiConfig);
         var engine = new ReviewEngine(client, aiConfig);
 
+        // 进度一律走 stderr：--json 模式 stdout 必须保持纯 JSON（机器消费不断流）
+        var progress = new ReviewProgressReporter(Console.Error, aiConfig, mode);
+
         ReviewReport report;
         try
         {
             report = await engine.RunAsync(repo, mode, Get(options, "base"), ReviewPrompt.BuildRuleSummary(root), cts.Token,
-                isCodeFile: mode == "all" ? MemberParserRegistry.Supports : null);
+                isCodeFile: mode == "all" ? MemberParserRegistry.Supports : null,
+                onProgress: progress.Report);
         }
         catch (LlmException ex)
         {
@@ -281,6 +328,10 @@ internal static class Program
         {
             return Fail($"模型调用超时（当前 ai.timeout_seconds={aiConfig.TimeoutSeconds}）。"
                 + "推理模型审查大改动需要更长时间——建议调大 ai.timeout_seconds（600 秒起步）或分批提交后审查。");
+        }
+        finally
+        {
+            progress.Dispose();
         }
 
         if (options.ContainsKey("json"))

@@ -2,7 +2,7 @@
 
 > 确定性引擎裁判合规，AI 只做装配。让任何项目在 10 分钟内接入"结构级 + 资产级"规范门禁。
 
-**当前版本**：v0.6.6（2026-11-16 发布：`--version` 版本查询）· **分发**：win-x64 / linux-x64 自包含单文件（零运行时依赖）· **开发**：.NET 10 · **单测**：404
+**当前版本**：v0.7.0（2026-11-17 发布：端点鉴权检查器 + 五个 Issue 修复）· **分发**：win-x64 / linux-x64 自包含单文件（零运行时依赖）· **开发**：.NET 10 · **单测**：439
 
 ## 它解决什么
 
@@ -16,7 +16,7 @@ guardAI 管"结构级 + 资产级"规范门禁，并做接入自动化（CI / pr
 
 ## 核心功能
 
-**七大检查器**（`guardAI check` 一条命令全跑，或 `--only <模块>` 单查）：
+**八大检查器**（`guardAI check` 一条命令全跑，或 `--only <模块>` 单查）：
 
 | 模块 | 查什么 | 抓什么 |
 |---|---|---|
@@ -27,6 +27,7 @@ guardAI 管"结构级 + 资产级"规范门禁，并做接入自动化（CI / pr
 | `sql` | SQL 拼接构造 | 插值含洞 / 标识符拼接 / string.Format 拼 SQL（注入防线前置） |
 | `perf` | 数据访问性能 | 循环内查库 N+1、SELECT * 全列查询 |
 | `layer` | 层契约（层归属 + 依赖方向 + 实体暴露） | Web 直连 Infrastructure、上层穿透数据访问、出参直接返回持久化实体（`guardai.yml` 配 `layers` / `allowed_dependencies` 才启用，未配置即跳过） |
+| `endpoint` | Minimal API 端点鉴权声明 | `Map*` 端点链上既无 `RequireAuthorization` 也无 `AllowAnonymous`——端点匿名可达、前端权限体系失效（`guardai.yml` 配 `endpoint_auth.enabled: true` 才启用；豁免强制写 reason；`require_permission: true` 可追加写操作端点权限码要求） |
 
 **写码前前置门**：`guardai.yml` 声明 `layers` / `allowed_dependencies` 后，AI 写文件前可走两道门——MCP 工具 `get_layer_contract`（path → 所属层/允许依赖/禁止项，纯事实查询）与 `guardAI gate --stdin`（PreToolUse hook：拦禁用目录/落位越界 + 注入层契约上下文；写入内容由 PostToolUse 的 `layer` 检查当轮拦）。`init` 自动生成层归属骨架但**不猜依赖方向**（猜错即首跑误报）。
 
@@ -200,7 +201,7 @@ src/GuardAI.Init      装配器（扫描、配置生成、闸口安装）
 src/GuardAI.Cli       单入口命令行
 config/presets        语言预设（规则资产）
 templates             闸口模板（CI / hook / AGENTS 片段）
-tests/GuardAI.Tests   xUnit 单测（404 用例）
+tests/GuardAI.Tests   xUnit 单测（439 用例）
 docs/cases            案例库（50 案例 / 39 规则）
 ```
 
@@ -210,8 +211,8 @@ docs/cases            案例库（50 案例 / 39 规则）
 
 | 场景 | 结果 |
 |---|---|
-| 全量单测 | ✅ 404/404 |
-| 自举：guardAI 检查自身仓库 | ✅ 七模块全过 0 违规（structure / duplicate / secret / doc / sql / perf / layer；layer 按自身五项目真实依赖方向 dogfood） |
+| 全量单测 | ✅ 439/439 |
+| 自举：guardAI 检查自身仓库 | ✅ 八模块全过 0 违规（structure / duplicate / secret / doc / sql / perf / layer / endpoint；layer 按自身五项目真实依赖方向 dogfood） |
 | 违规现场（DemoShop 实测） | ✅ 5 处全抓，退出码 1 |
 | 多语言冒烟（Java 真重复） | ✅ 100% 相似 3 处全逮，存量债首跑收编不轰炸 |
 | 测试项目豁免（WitchC.RBAC.UnitTests 回归） | ✅ 修复前 79 条误报 → 修复后 0 |
@@ -224,4 +225,4 @@ docs/cases            案例库（50 案例 / 39 规则）
 
 ## 路线图
 
-P1 核心引擎 + `init` ✅ → P2 MCP + 误报治理 + 台账 ✅ → P3 重复检测 + 能力清单 ✅ → P4 多语言 + 三步 AI 层（`review` / `init --ai` / `learn`）✅（v0.5.0）→ help 体系 + 钩子根治 + AI 触发项（v0.5.1）→ 代码级四检查器（secret / doc / sql / perf）+ prompt 包 v3（v0.6.0）→ 分发链路与文档补齐（v0.6.1 / v0.6.2）→ 测试代码豁免补漏 `*.UnitTests`（v0.6.3）→ 层契约 + 写码前前置门 S1/S2（layer 第七检查器 + `get_layer_contract` + `gate --stdin`，v0.6.4）→ 误报根治（重复检测 JSX 语义豁免 + perf N+1 集合迭代闸，v0.6.5）→ `--version` 版本查询（v0.6.6）→ P5 线上轻量版 + 前端规则
+P1 核心引擎 + `init` ✅ → P2 MCP + 误报治理 + 台账 ✅ → P3 重复检测 + 能力清单 ✅ → P4 多语言 + 三步 AI 层（`review` / `init --ai` / `learn`）✅（v0.5.0）→ help 体系 + 钩子根治 + AI 触发项（v0.5.1）→ 代码级四检查器（secret / doc / sql / perf）+ prompt 包 v3（v0.6.0）→ 分发链路与文档补齐（v0.6.1 / v0.6.2）→ 测试代码豁免补漏 `*.UnitTests`（v0.6.3）→ 层契约 + 写码前前置门 S1/S2（layer 第七检查器 + `get_layer_contract` + `gate --stdin`，v0.6.4）→ 误报根治（重复检测 JSX 语义豁免 + perf N+1 集合迭代闸，v0.6.5）→ `--version` 版本查询（v0.6.6）→ 端点鉴权检查器 endpoint + 路径基准/CLI 诊断/进度输出修复（v0.7.0）→ P5 线上轻量版 + 前端规则
