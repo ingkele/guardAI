@@ -243,6 +243,182 @@ public class DuplicateCheckTests : IDisposable
           - .cs
         """;
 
+    /// <summary>Issue #7 复现用 C# 一侧：静态方法 + 常量清单。</summary>
+    private const string Issue7CSharp = """
+        namespace Demo.Protocols;
+
+        /// <summary>协议清单。</summary>
+        public static class ProviderProtocols
+        {
+            /// <summary>列出全部已支持协议的配置值。</summary>
+            /// <returns>配置值数组。</returns>
+            public static IReadOnlyList<string> SupportedConfigValues() =>
+                [OpenAiCompatible, Anthropic, Gemini, ArkImage, OpenAiImage, DashScopeImage, DashScopeAsyncImage];
+
+            /// <summary>OpenAI 兼容协议。</summary>
+            public const string OpenAiCompatible = "openai-compatible";
+
+            /// <summary>Anthropic 协议。</summary>
+            public const string Anthropic = "anthropic";
+
+            /// <summary>Gemini 协议。</summary>
+            public const string Gemini = "gemini";
+
+            /// <summary>火山方舟图像。</summary>
+            public const string ArkImage = "ark-image";
+
+            /// <summary>OpenAI 图像。</summary>
+            public const string OpenAiImage = "openai-image";
+
+            /// <summary>百炼图像。</summary>
+            public const string DashScopeImage = "dashscope-image";
+
+            /// <summary>百炼异步图像。</summary>
+            public const string DashScopeAsyncImage = "dashscope-async-image";
+        }
+        """;
+
+    /// <summary>Issue #7 复现用 TS 一侧：React hook，与上面的 C# 方法毫无复用关系。</summary>
+    private const string Issue7TypeScript = """
+        import React from 'react'
+
+        export function useDebouncedValue<T>(value: T, delayMs: number): T {
+          const [debounced, setDebounced] = React.useState<T>(value)
+          const lastChangeAt = React.useRef(Date.now())
+
+          React.useEffect(() => {
+            lastChangeAt.current = Date.now()
+            if (delayMs <= 0) {
+              setDebounced(() => value)
+              return
+            }
+            const timer = globalThis.setTimeout(() => {
+              if (isSettled(lastChangeAt.current, delayMs, Date.now())) setDebounced(() => value)
+            }, delayMs)
+            return () => {
+              globalThis.clearTimeout(timer)
+            }
+          }, [value, delayMs])
+
+          return debounced
+        }
+        """;
+
+    /// <summary>跨语言不比对：C# 静态方法 vs TS hook 不得判重复（Issue #7 主症状，原为相似度 100%）。</summary>
+    [Fact]
+    public void 跨语言成员_不判重复()
+    {
+        WriteFile("src/ProviderProtocols.cs", Issue7CSharp);
+        WriteFile("web/hook.ts", Issue7TypeScript);
+
+        var result = Run(strict: true);
+
+        Assert.Empty(result.Violations);
+    }
+
+    /// <summary>反向顺序同样不判：语言隔离必须对称，不能只隔离一侧（candidates 与参照池都要过闸）。</summary>
+    [Fact]
+    public void 跨语言成员_反向顺序也不判()
+    {
+        WriteFile("web/hook.ts", Issue7TypeScript);
+        WriteFile("src/ProviderProtocols.cs", Issue7CSharp);
+
+        var result = Run(strict: true);
+
+        Assert.Empty(result.Violations);
+    }
+
+    /// <summary>跨语言隔离不得削弱同语言检测：C# ↔ C# 换皮对仍抓。</summary>
+    [Fact]
+    public void 同语言CSharp换皮_仍抓()
+    {
+        WriteFile("src/A/FileStorage.cs", OriginalUpload);
+        WriteFile("src/Z/ImageStorage.cs", RewrittenUpload);
+
+        var result = Run(strict: true);
+
+        var violation = Assert.Single(result.Violations);
+        Assert.Contains("ImageStorage", violation.File);
+        Assert.Contains("FileStorage", violation.Message);
+    }
+
+    /// <summary>跨语言隔离不得削弱同语言检测：TS ↔ TS 换皮对仍抓。</summary>
+    [Fact]
+    public void 同语言TypeScript换皮_仍抓()
+    {
+        WriteFile("web/a/fetcher.ts", """
+            export function fetchUser(id: string) {
+              const res = await client.get('/users/' + id)
+              const data = res.data
+              if (!data) { throw new Error('missing') }
+              return data
+            }
+            """);
+        WriteFile("web/z/loader.ts", """
+            export function loadMember(key: string) {
+              const response = await client.get('/users/' + key)
+              const payload = response.data
+              if (!payload) { throw new Error('missing') }
+              return payload
+            }
+            """);
+
+        var result = Run(strict: true);
+
+        var violation = Assert.Single(result.Violations);
+        Assert.Contains("loader.ts", violation.File);
+    }
+
+    /// <summary>tsx 与 ts 属同一语言（TypeScript），互相之间仍可比对——同族扩展名不能误隔离。</summary>
+    [Fact]
+    public void ts与tsx同属TypeScript_仍可比对()
+    {
+        WriteFile("web/a/one.ts", """
+            export function fetchUser(id: string) {
+              const res = await client.get('/users/' + id)
+              const data = res.data
+              if (!data) { throw new Error('missing') }
+              return data
+            }
+            """);
+        WriteFile("web/z/two.tsx", """
+            export function loadMember(key: string) {
+              const response = await client.get('/users/' + key)
+              const payload = response.data
+              if (!payload) { throw new Error('missing') }
+              return payload
+            }
+            """);
+
+        var result = Run(strict: true);
+
+        Assert.Single(result.Violations);
+    }
+
+    /// <summary>语言身份派生：注册表覆盖全部可解析扩展名（漏一个即退化成跨语言可比）。</summary>
+    [Theory]
+    [InlineData("a.cs", "csharp")]
+    [InlineData("a.java", "java")]
+    [InlineData("a.kt", "kotlin")]
+    [InlineData("a.kts", "kotlin")]
+    [InlineData("a.ts", "typescript")]
+    [InlineData("a.tsx", "typescript")]
+    [InlineData("a.js", "javascript")]
+    [InlineData("a.jsx", "javascript")]
+    [InlineData("a.go", "go")]
+    [InlineData("a.py", "python")]
+    public void 语言身份派生_覆盖全部可解析扩展名(string path, string expected)
+    {
+        Assert.Equal(expected, MemberParserRegistry.LanguageOf(path));
+    }
+
+    /// <summary>未知扩展名不归任何语言（返回 null，保守放行由阈值兜底）。</summary>
+    [Fact]
+    public void 未知扩展名_无语言身份()
+    {
+        Assert.Null(MemberParserRegistry.LanguageOf("notes.txt"));
+    }
+
     /// <summary>
     /// 在临时仓库写入文件（按相对路径自动建目录）。
     /// </summary>

@@ -34,11 +34,17 @@ public static class CodeSimilarity
     /// 把归一化方法体切成 token 流（标识符/数字按策略归一化）。
     /// </summary>
     /// <param name="normalizedBody">已去注释/字符串/多余空白的方法体文本。</param>
+    /// <param name="keywords">
+    /// 该语言要保留原样的关键字集（Issue #7）；null 用 C# 缺省集（保持历史行为）。
+    /// 按语言选表的意义：TS 的 const/function/let、Kotlin 的 val/when、Java 的 extends 等
+    /// 不再被归一成 id——否则这些语言特征词消失后，任意两个方法都会撞成同一 token 流。
+    /// </param>
     /// <returns>token 列表。</returns>
     /// <exception cref="ArgumentNullException">normalizedBody 为 null 时抛出。</exception>
-    public static IReadOnlyList<string> Tokenize(string normalizedBody)
+    public static IReadOnlyList<string> Tokenize(string normalizedBody, IReadOnlySet<string>? keywords = null)
     {
         ArgumentNullException.ThrowIfNull(normalizedBody);
+        var preserved = keywords ?? Keywords;
 
         var tokens = new List<string>();
         var i = 0;
@@ -66,7 +72,7 @@ public static class CodeSimilarity
                 {
                     tokens.Add(word); // 成员访问名（.Foo）保留——API 调用序列是方法职责的指纹
                 }
-                else if (Keywords.Contains(word))
+                else if (preserved.Contains(word))
                 {
                     tokens.Add(word);
                 }

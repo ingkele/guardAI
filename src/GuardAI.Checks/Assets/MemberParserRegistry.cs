@@ -33,6 +33,61 @@ public static class MemberParserRegistry
     public static IReadOnlyList<string> Extensions { get; } = Parsers.Keys.ToArray();
 
     /// <summary>
+    /// 扩展名 → 语言身份键（Issue #7 跨语言隔离的唯一判据）。
+    /// </summary>
+    /// <remarks>
+    /// 与解析器映射同置于本类，保证"能解析的文件必有语言身份"——漏一个扩展名就会让它退化成
+    /// 跨语言可比，正是 Issue #7 的成因。同族扩展名共用一个键（.ts/.tsx → typescript）。
+    /// Go/Python 不走 <see cref="LanguageProfile"/>，键在此显式给出。
+    /// </remarks>
+    private static readonly Dictionary<string, string> Languages =
+        new(StringComparer.OrdinalIgnoreCase)
+        {
+            [".cs"] = LanguageProfile.CSharp.SimilarityLanguage,
+            [".java"] = LanguageProfile.Java.SimilarityLanguage,
+            [".kt"] = LanguageProfile.Kotlin.SimilarityLanguage,
+            [".kts"] = LanguageProfile.Kotlin.SimilarityLanguage,
+            [".ts"] = LanguageProfile.TypeScript.SimilarityLanguage,
+            [".tsx"] = LanguageProfile.TypeScript.SimilarityLanguage,
+            [".js"] = LanguageProfile.JavaScript.SimilarityLanguage,
+            [".jsx"] = LanguageProfile.JavaScript.SimilarityLanguage,
+            [".mjs"] = LanguageProfile.JavaScript.SimilarityLanguage,
+            [".cjs"] = LanguageProfile.JavaScript.SimilarityLanguage,
+            [".go"] = "go",
+            [".py"] = "python",
+        };
+
+    /// <summary>
+    /// 取文件的语言身份键（跨语言比对隔离用）。
+    /// </summary>
+    /// <param name="relativePath">仓库相对路径（正斜杠）。</param>
+    /// <returns>语言键（如 csharp / typescript）；未知扩展名返回 null（不参与跨语言隔离判定）。</returns>
+    public static string? LanguageOf(string relativePath)
+    {
+        ArgumentNullException.ThrowIfNull(relativePath);
+        return Languages.TryGetValue(ExtensionOf(relativePath), out var language) ? language : null;
+    }
+
+    /// <summary>
+    /// 取扩展名对应的语言剖析参数（C 系语言；Go/Python 无剖析参数返回 null）。
+    /// </summary>
+    /// <param name="relativePath">仓库相对路径（正斜杠）。</param>
+    /// <returns>语言剖析参数；非 C 系或未知扩展名返回 null。</returns>
+    public static LanguageProfile? ProfileOf(string relativePath)
+    {
+        ArgumentNullException.ThrowIfNull(relativePath);
+        return ExtensionOf(relativePath).ToLowerInvariant() switch
+        {
+            ".cs" => LanguageProfile.CSharp,
+            ".java" => LanguageProfile.Java,
+            ".kt" or ".kts" => LanguageProfile.Kotlin,
+            ".ts" or ".tsx" => LanguageProfile.TypeScript,
+            ".js" or ".jsx" or ".mjs" or ".cjs" => LanguageProfile.JavaScript,
+            _ => null,
+        };
+    }
+
+    /// <summary>
     /// 判断扩展名是否支持解析。
     /// </summary>
     /// <param name="relativePath">仓库相对路径或文件名。</param>

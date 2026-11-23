@@ -15,6 +15,10 @@ namespace GuardAI.Checks.Assets;
 /// JSX 语义豁免（Issue #1）：含 JSX 标记的方法整体退出规则 1——归一化把标签/属性名抹成 id、
 /// 字符串抹成长度标记后，任意返回 JSX 的函数 token 流天然高度重叠（骨架相似 ≠ 语义重复），
 /// 探针实测任何组件两两 50~100% 撞车；规则 2（名字通道）不受影响。
+/// 跨语言同一病症（Issue #7）：不同语言的成员在归一化后 token 流几乎一致（TS 的 const/function
+/// 与 C# 的 public/static 都抹成 id），会撞出"相似度 100%"的假阳性。两条修复并用——
+/// 比对前按语言身份键隔离（不同语言物理上不可能复用，直接跳过），
+/// 归一化时按语言选关键字表（语言特征词保留原样，恢复同语言内的判别力）。
 /// 零误报三件套：baseline 快照（存量不报，只报新增）+ 阈值/门槛配置 + exclusions 豁免；
 /// 检测能力升级首跑自动把新通道挖出的存量对并入基线（不轰炸存量债），升级前后语义一致。
 /// 修复指令直指已有实现（文件:行），让 AI 当场改成复用。
@@ -26,9 +30,10 @@ public sealed class DuplicateCheck : IGuardCheck
     /// 3 = 字符串字面量带长度 token + 方法名解析修正（元组返回值）；
     /// 4 = 多语言成员解析（Java/Kotlin/TS/JS/Go/Python）+ 声明形态闸——检测面与成员键语义变化，
     /// 旧基线重键的存量对靠首跑收编吸收（见 Run 的升级分支），不轰炸存量债；
-    /// 5 = JSX 语义豁免——含 JSX 标记的方法退出近似重复通道（Issue #1）。
+    /// 5 = JSX 语义豁免——含 JSX 标记的方法退出近似重复通道（Issue #1）；
+    /// 6 = 跨语言隔离 + 按语言选归一化关键字表——不同语言成员不再互相比对，语言特征词保留原样（Issue #7）。
     /// </summary>
-    public const int CurrentDetectorVersion = 5;
+    public const int CurrentDetectorVersion = 6;
 
     /// <inheritdoc />
     public string Name => "duplicate";
@@ -146,17 +151,58 @@ public sealed class DuplicateCheck : IGuardCheck
 
         // JSX 成员集合：含 JSX 标记的方法整体退出近似重复通道（骨架相似度无语义区分度，Issue #1）
         var jsxKeys = all.Where(m => JsxMarkup.IsMatch(m.BodyText)).Select(MemberKeyOf).ToHashSet(StringComparer.Ordinal);
+
+        // 语言身份缓存（Issue #7）：不同语言的成员物理上不可能互相复用，跨语言比对必须跳过。
+        // 只靠归一化区分不了——TS 的 const/function 与 C# 的 public/static 在抹成 id 后流形一致，
+        // 会撞出"相似度 100%"的假阳性（ProviderProtocols.SupportedConfigValues vs useDebouncedValue）。
+        var languages = new Dictionary<string, string?>(StringComparer.Ordinal);
+
+        string? LanguageOfMember(CodeMember member)
+        {
+            var key = MemberKeyOf(member);
+            if (!languages.TryGetValue(key, out var language))
+            {
+                language = MemberParserRegistry.LanguageOf(member.File);
+                languages[key] = language;
+            }
+
+            return language;
+        }
+
+        IReadOnlyList<string> TokensOf(CodeMember member)
+        {
+            var key = MemberKeyOf(member);
+            if (!tokenCache.TryGetValue(key, out var tokens))
+            {
+                // 按语言选关键字表（Issue #7 方案 B）：语言特征词保留原样，扩大同语言内的判别力
+                var keywords = MemberParserRegistry.ProfileOf(member.File)?.Keywords;
+                tokens = CodeSimilarity.Tokenize(member.BodyText, keywords);
+                tokenCache[key] = tokens;
+            }
+
+            return tokens;
+        }
+
         var results = new Dictionary<string, DetectedPair>(StringComparer.Ordinal);
 
         foreach (var candidate in candidates)
         {
             var candidateKey = MemberKeyOf(candidate);
+            var candidateLanguage = LanguageOfMember(candidate);
             foreach (var reference in all)
             {
                 var referenceKey = MemberKeyOf(reference);
 
                 // 同名同类型的重载/自身不是重复
                 if (referenceKey == candidateKey)
+                {
+                    continue;
+                }
+
+                // 跨语言隔离（Issue #7）：语言键不同即不可能复用；任一侧键未知则保守放行（只漏不误方向由阈值兜底）
+                if (candidateLanguage is not null
+                    && LanguageOfMember(reference) is { } referenceLanguage
+                    && !string.Equals(candidateLanguage, referenceLanguage, StringComparison.Ordinal))
                 {
                     continue;
                 }
@@ -175,17 +221,8 @@ public sealed class DuplicateCheck : IGuardCheck
                     continue;
                 }
 
-                if (!tokenCache.TryGetValue(candidateKey, out var tokensCandidate))
-                {
-                    tokensCandidate = CodeSimilarity.Tokenize(candidate.BodyText);
-                    tokenCache[candidateKey] = tokensCandidate;
-                }
-
-                if (!tokenCache.TryGetValue(referenceKey, out var tokensReference))
-                {
-                    tokensReference = CodeSimilarity.Tokenize(reference.BodyText);
-                    tokenCache[referenceKey] = tokensReference;
-                }
+                var tokensCandidate = TokensOf(candidate);
+                var tokensReference = TokensOf(reference);
 
                 // 规则 1：近似重复（过短方法体不参与，防结构性撞车；任一侧含 JSX 标记即豁免——骨架相似 ≠ 语义重复）
                 // 双通道并联：Jaccard 抓"换皮重写"（整段改皮），Containment 抓"子集型复制"（删行/加行，如映射样板漏字段）

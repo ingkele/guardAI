@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-16T20:35:11.9901279+08:00",
+  "generatedAt": "2026-11-23T19:09:44.5851540+08:00",
   "pairs": [
     {
       "key": "5ce026ca78a616a5",
@@ -90,7 +90,12 @@
       "key": "07e823cf0e1139ec",
       "a": "DuplicateCheckTests.JSX豁免不牵连CSharp换皮检测@tests/GuardAI.Tests/DuplicateCheckTests.cs",
       "b": "DuplicateCheckTests.JSX整组件逐字复制_按设计不报_只漏不误@tests/GuardAI.Tests/DuplicateCheckTests.cs"
+    },
+    {
+      "key": "125322da2bfff474",
+      "a": "ParseText.ExtractInnerBody@src/GuardAI.Checks/Assets/ParseText.cs",
+      "b": "ParseText.MatchingParen@src/GuardAI.Checks/Assets/ParseText.cs"
     }
   ],
-  "detectorVersion": 5
+  "detectorVersion": 6
 }
